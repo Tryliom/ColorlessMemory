@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(HideAndSeek2D)
+project(ColorlessMemory)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

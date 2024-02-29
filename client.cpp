@@ -20,7 +20,6 @@ int main()
 	sf::Packet request;
 	request << messageSent;
 
-
 	if (socket.send(request) != sf::Socket::Done)
 	{
 		std::cerr << "Could not send message to server \n";
