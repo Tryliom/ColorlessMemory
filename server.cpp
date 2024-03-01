@@ -1,48 +1,39 @@
-#include "message.h"
-
-#include <SFML/Network.hpp>
-
-#include <iostream>
+#include "server.h"
+#include "logger.h"
 
 int main()
 {
-	sf::TcpListener listener;
-	// bind the listener to a port
-	if (listener.listen(PORT) != sf::Socket::Done)
+	Server server;
+
+	// Bind the listener to a port
+	if (!server.Bind(PORT))
 	{
-		// error...
-		std::cerr << "Could not listen to port\n";
+		LOG_ERROR("Could not bind listener to port");
 		return EXIT_FAILURE;
 	}
-	std::cout << "Server is running\n";
-	while (true)
+
+	LOG("Server is listening to port " << PORT);
+
+	server.StartThreads();
+
+	while (server.running)
 	{
-		// accept a new connection
-		sf::TcpSocket client;
-		if (listener.accept(client) != sf::Socket::Done)
+		std::string input;
+		std::cin >> input;
+		if (input == "stop")
 		{
-			// error...
-			std::cerr << "Could not accept client\n";
-			return EXIT_FAILURE;
+			server.running = false;
+			break;
 		}
-		std::cout << "Client " << client.getRemoteAddress() << ':' << client.getRemotePort() << " is connected\n";
-		Message messageReceived;
-		sf::Packet requestReceived;
-
-		if (client.receive(requestReceived) != sf::Socket::Done)
+		else
 		{
-			std::cout << "Did not receive message correctly\n";
-		}
-		requestReceived >> messageReceived;
-		std::cout << "Client: " << client.getRemoteAddress() << ':' << client.getRemotePort() << " sent: "
-				  << messageReceived.content << '\n';
+			MessagePacket messageSent;
+			messageSent.playerName = "Server";
+			messageSent.message = input;
 
-		sf::Packet answer;
-		answer << messageReceived;
-
-		if (client.send(answer) != sf::Socket::Done)
-		{
-			std::cout << "Did not send answer message correctly\n";
+			server.SendMessageToAllClients(messageSent);
 		}
 	}
+
+	return EXIT_SUCCESS;
 }

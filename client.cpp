@@ -1,38 +1,136 @@
-#include "message.h"
+#include "packetManager.h"
+#include "client.h"
+#include "logger.h"
 
-#include <SFML/Network.hpp>
-
-#include <iostream>
+#include <thread>
+#include <queue>
 
 int main()
 {
-	sf::TcpSocket socket;
-	sf::Socket::Status status = socket.connect(HOST_NAME, PORT);
+	bool running = true;
+	Client client;
+	sf::Socket::Status status = client.socket->connect(HOST_NAME, PORT);
+
 	if (status != sf::Socket::Done)
 	{
-		// error...
-		std::cerr << "Could not connect to server!\n";
+		LOG_ERROR("Could not connect to server");
 		return EXIT_FAILURE;
 	}
-	Message messageSent;
-	std::cin >> messageSent.content;
 
-	sf::Packet request;
-	request << messageSent;
-
-	if (socket.send(request) != sf::Socket::Done)
+	std::thread receiveThread([&client, &running]()
 	{
-		std::cerr << "Could not send message to server \n";
-		return EXIT_FAILURE;
-	}
-	sf::Packet answer;
-	if (socket.receive(answer) != sf::Socket::Done)
-	{
-		std::cerr << "Could not receive answer from server\n";
-	}
-	Message answerMsg;
-	answer >> answerMsg;
+		while (running)
+		{
+			sf::Packet answer;
+			if (client.socket->receive(answer) != sf::Socket::Done)
+			{
+				LOG_ERROR("Could not receive answer from server");
+				std::exit(EXIT_FAILURE);
+			}
 
-	std::cout << answerMsg.content << '\n';
+			LOG("Received packet from server");
+
+			PacketType packetType = PacketManager::ReceivePacket(*client.socket, answer);
+
+			if (packetType == PacketType::Message)
+			{
+				MessagePacket messageReceived = PacketManager::GetMessagePacket(answer);
+				LOG(messageReceived.playerName + ": " + messageReceived.message);
+			}
+			else if (packetType == PacketType::Acknowledgement)
+			{
+				LOG("Acknowledgement received");
+				client.acknowledged = true;
+				client.ackClock.restart();
+				delete client.packetWaitingForAcknowledgement;
+				continue;
+			}
+			else
+			{
+				LOG_ERROR("Received invalid packet type");
+			}
+
+			// Send acknowledgement packet
+			client.acknowledged = false;
+			client.SendPacket(PacketManager::CreatePacket(AcknowledgementPacket()));
+		}
+	});
+	receiveThread.detach();
+
+	std::thread sendThread([&client, &running]()
+	{
+		while (running)
+		{
+			if (!client.acknowledged)
+			{
+				if (client.ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
+				{
+					// Resend packet
+					if (client.socket->send(*client.packetWaitingForAcknowledgement) != sf::Socket::Done)
+					{
+						LOG_ERROR("Could not send packet to server");
+						std::exit(EXIT_FAILURE);
+					}
+
+					client.ackClock.restart();
+				}
+			}
+			else if (!client.packetsToBeSent.empty())
+			{
+				client.packetWaitingForAcknowledgement = client.packetsToBeSent.front();
+				client.packetsToBeSent.pop();
+
+				if (client.socket->send(*client.packetWaitingForAcknowledgement) != sf::Socket::Done)
+				{
+					LOG_ERROR("Could not send packet to server");
+					std::exit(EXIT_FAILURE);
+				}
+
+				if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) != PacketType::Acknowledgement)
+				{
+					client.acknowledged = false;
+					client.ackClock.restart();
+				}
+				else
+				{
+					client.acknowledged = true;
+					client.ackClock.restart();
+					delete client.packetWaitingForAcknowledgement;
+				}
+			}
+		}
+	});
+	sendThread.detach();
+
+	ConnectPacket connectPacket;
+	std::cout << "Enter your name: ";
+	std::cin >> connectPacket.playerName;
+
+	client.SendPacket(PacketManager::CreatePacket(connectPacket));
+
+	LOG("Chat + Enter to send | stop to exit");
+
+	while(running)
+	{
+		MessagePacket messageSent;
+		messageSent.playerName = connectPacket.playerName;
+		std::cin >> messageSent.message;
+
+		if (messageSent.message == "stop")
+		{
+			running = false;
+			DisconnectPacket disconnectPacket;
+			disconnectPacket.playerName = connectPacket.playerName;
+			if (!PacketManager::SendPacket(*client.socket, disconnectPacket))
+			{
+				LOG_ERROR("Could not send disconnect packet");
+				return EXIT_FAILURE;
+			}
+			continue;
+		}
+
+		client.SendPacket(PacketManager::CreatePacket(messageSent));
+	}
+
 	return EXIT_SUCCESS;
 }

@@ -60,7 +60,7 @@ sudo apt-get install libx11-dev libxrandr-dev libxi-dev libudev-dev libgl1-mesa-
 You need to install CLion. You can follow the instructions on the [official documentation](https://www.jetbrains.com/clion/download/).
 
 You need to create cmake profile with the following settings.
-#### Debug-client
+#### Debug-windows
 ![Debug-client](./documentation/images/debug-client.png)
 
 Fill the CMAKE options with the following values:
@@ -74,21 +74,7 @@ Example:
 -DCMAKE_TOOLCHAIN_FILE=C:\tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DPORT:INT=43845 -DHOST_NAME:STRING="localhost"
 ```
 
-#### Debug-server
-![Debug-server](./documentation/images/debug-server.png)
-
-Fill the CMAKE options with the following values:
-```
--DCMAKE_TOOLCHAIN_FILE=<Link to your vcpkg.cmake in WSL> -DPORT:INT=43845
-```
-The `PORT` is the default value. You can change it if you want, but you need to change the debug-client values too.
-
-Example:
-```
--DCMAKE_TOOLCHAIN_FILE=~/dev/vcpkg/scripts/buildsystems/vcpkg.cmake -DPORT:INT=43845
-```
-
-#### Release-client
+#### Release-windows
 ![Release-client](./documentation/images/release-client.png)
 
 Fill the CMAKE options with the following values:
@@ -96,12 +82,17 @@ Fill the CMAKE options with the following values:
 -DCMAKE_TOOLCHAIN_FILE=<Link to your vcpkg.cmake> -DPORT:INT=43845 -DHOST_NAME:STRING="<Your server IP>"
 ```
 
-#### Release-server
+#### Release-linux
 ![Release-server](./documentation/images/release-server.png)
 
 Fill the CMAKE options with the following values:
 ```
 -DCMAKE_TOOLCHAIN_FILE=<Link to your vcpkg.cmake in WSL> -DPORT:INT=43845
+```
+
+Example:
+```
+-DCMAKE_TOOLCHAIN_FILE=~/dev/vcpkg/scripts/buildsystems/vcpkg.cmake -DPORT:INT=43845
 ```
 
 You need to run each profiles for them to recognize HOST_NAME and PORT.
