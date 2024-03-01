@@ -7,7 +7,7 @@
 int main()
 {
 	sf::TcpSocket socket;
-	sf::Socket::Status status = socket.connect("localhost", 12345);
+	sf::Socket::Status status = socket.connect(HOST_NAME, PORT);
 	if (status != sf::Socket::Done)
 	{
 		// error...

@@ -8,7 +8,7 @@ int main()
 {
 	sf::TcpListener listener;
 	// bind the listener to a port
-	if (listener.listen(12345) != sf::Socket::Done)
+	if (listener.listen(PORT) != sf::Socket::Done)
 	{
 		// error...
 		std::cerr << "Could not listen to port\n";

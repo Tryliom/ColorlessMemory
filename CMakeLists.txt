@@ -4,19 +4,20 @@ project(ColorlessMemory)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(HOST_NAME "Set the host name" "localhost")
+option(PORT "Set the port" "43845")
+
+add_definitions("-DHOST_NAME=\"${HOST_NAME}\"")
+add_definitions("-DPORT=${PORT}")
+
 find_package(SFML COMPONENTS system network CONFIG REQUIRED)
 
 add_executable(src client.cpp)
 add_executable(server server.cpp)
 
 file(GLOB_RECURSE DATA_FILES
-        "data/*.json"
         "data/*.png"
         "data/*.jpg"
-        "data/*.bmp"
-        "data/*.hdr"
-        "data/*.obj"
-        "data/*.mtl"
 )
 foreach (DATA ${DATA_FILES})
     get_filename_component(FILE_NAME ${DATA} NAME)

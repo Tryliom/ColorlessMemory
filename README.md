@@ -1,7 +1,11 @@
 # Colorless Memory
 A multiplayer memory with design from Colorless Odyssey
 
-## Error fix
+## Setup - CLion
+
+
+
+## Error fix - local development
 
 ### libcuda.so.1 is not a symbolic link on WSL2
 
