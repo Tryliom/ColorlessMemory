@@ -12,8 +12,8 @@ add_definitions("-DPORT=${PORT}")
 
 find_package(SFML COMPONENTS system network CONFIG REQUIRED)
 
-add_executable(src client.cpp)
-add_executable(server server.cpp)
+add_executable(client main_client.cpp)
+add_executable(server main_server.cpp)
 
 file(GLOB_RECURSE DATA_FILES
         "data/*.png"
@@ -42,14 +42,14 @@ add_custom_target(
         DEPENDS ${Data_OUTPUT_FILES}
 )
 
-file(GLOB_RECURSE COMMON_FILES src/*.cpp include/*.h)
+file(GLOB_RECURSE COMMON_FILES client/*.cpp include/*.h)
 add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC include/)
-target_include_directories(Common PUBLIC src/)
+target_include_directories(Common PUBLIC client/)
 target_link_libraries(Common PUBLIC sfml-system sfml-network)
 set_target_properties(Common PROPERTIES UNITY_BUILD ON)
 
-target_link_libraries(src PRIVATE Common)
+target_link_libraries(client PRIVATE Common)
 target_link_libraries(server PRIVATE Common)
 
-add_dependencies(src data_target)
+add_dependencies(client data_target)
