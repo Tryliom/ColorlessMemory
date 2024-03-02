@@ -88,7 +88,7 @@ int main()
 
 	ConnectPacket connectPacket;
 	std::cout << "Enter your name: ";
-	std::cin >> connectPacket.playerName;
+	std::getline(std::cin, connectPacket.playerName);
 
 	client.SendPacket(PacketManager::CreatePacket(connectPacket));
 
@@ -98,7 +98,7 @@ int main()
 	{
 		MessagePacket messageSent;
 		messageSent.playerName = connectPacket.playerName;
-		std::cin >> messageSent.message;
+		std::getline(std::cin, messageSent.message);
 
 		if (messageSent.message == "stop")
 		{

@@ -19,7 +19,8 @@ int main()
 	while (server.running)
 	{
 		std::string input;
-		std::cin >> input;
+		std::getline(std::cin, input);
+
 		if (input == "stop")
 		{
 			server.running = false;
