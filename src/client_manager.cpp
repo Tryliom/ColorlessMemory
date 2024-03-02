@@ -1,6 +1,6 @@
-#include "clientManager.h"
+#include "client_manager.h"
 
-#include "packetManager.h"
+#include "packet_manager.h"
 #include "logger.h"
 
 #include <thread>

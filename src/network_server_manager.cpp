@@ -1,4 +1,4 @@
-#include "server.h"
+#include "network_server_manager.h"
 
 #include "logger.h"
 
@@ -7,23 +7,23 @@
 #include <mutex>
 #include <utility>
 
-Server::~Server()
+NetworkServerManager::~NetworkServerManager()
 {
 	running = false;
 	listener.close();
 }
 
-bool Server::Bind(unsigned short port)
+bool NetworkServerManager::Bind(unsigned short port)
 {
 	return listener.listen(port) == sf::Socket::Done;
 }
 
-void Server::ListenToClientPackets(std::function<bool(sf::TcpSocket*, const PacketType, sf::Packet)> onMessageReceived)
+void NetworkServerManager::ListenToClientPackets(std::function<bool(sf::TcpSocket*, const PacketType, sf::Packet)> onMessageReceived)
 {
 	this->onClientMessageReceived = std::move(onMessageReceived);
 }
 
-void Server::StartThreads()
+void NetworkServerManager::StartThreads()
 {
 	std::thread clientAcceptor = std::thread([this]() {
 		while (running)
@@ -62,12 +62,12 @@ void Server::StartThreads()
 	packetSender.detach();
 }
 
-void Server::SendMessageToAllClients(const MessagePacket& message, sf::TcpSocket* sender)
+void NetworkServerManager::SendMessageToAllClients(const MessagePacket& message, sf::TcpSocket* sender)
 {
 	clients.SendPacketToAllClients(PacketManager::CreatePacket(message), sender);
 }
 
-void Server::ReceivePacketFromClient(std::size_t clientIndex)
+void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 {
 	bool receiving = true;
 	auto* client = clients[clientIndex];

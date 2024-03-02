@@ -1,14 +1,12 @@
-#include "packetManager.h"
-#include "client.h"
+#include "packet_manager.h"
+#include "network_client_manager.h"
 #include "logger.h"
-
-#include <thread>
-#include <queue>
 
 int main()
 {
 	bool running = true;
 	Client client;
+	NetworkClientManager networkClientManager;
 	sf::Socket::Status status = client.socket->connect(HOST_NAME, PORT);
 
 	if (status != sf::Socket::Done)
@@ -17,74 +15,18 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	std::thread receiveThread([&client, &running]()
+	networkClientManager.SetOnMessageReceived([](sf::Packet& packet, PacketType packetType)
 	{
-		while (running)
+		if (packetType == PacketType::Message)
 		{
-			sf::Packet answer;
-			PacketType packetType = PacketManager::ReceivePacket(*client.socket, answer);
-
-			if (packetType == PacketType::Invalid)
-			{
-				LOG_ERROR("Could not receive answer from server");
-				std::exit(EXIT_FAILURE);
-			}
-
-			if (packetType == PacketType::Message)
-			{
-				MessagePacket messageReceived = PacketManager::GetMessagePacket(answer);
-				LOG(messageReceived.playerName + ": " + messageReceived.message);
-			}
-			else if (packetType == PacketType::Acknowledgement)
-			{
-				client.acknowledged = true;
-				client.ackClock.restart();
-				delete client.packetWaitingForAcknowledgement;
-				continue;
-			}
-
-			// Send acknowledgement packet
-			client.SendPacket(PacketManager::CreatePacket(AcknowledgementPacket()));
+			MessagePacket messageReceived = PacketManager::GetMessagePacket(packet);
+			LOG(messageReceived.playerName + ": " + messageReceived.message);
 		}
+
+		return true;
 	});
-	receiveThread.detach();
 
-	std::thread sendThread([&client, &running]()
-	{
-		while (running)
-		{
-			if (!client.acknowledged)
-			{
-				if (client.ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
-				{
-					// Resend packet
-					client.socket->send(*client.packetWaitingForAcknowledgement);
-					client.ackClock.restart();
-				}
-			}
-			else if (!client.packetsToBeSent.empty())
-			{
-				client.packetWaitingForAcknowledgement = client.packetsToBeSent.front();
-				client.packetsToBeSent.pop();
-
-				if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) != PacketType::Acknowledgement)
-				{
-					client.acknowledged = false;
-					client.ackClock.restart();
-				}
-
-				client.socket->send(*client.packetWaitingForAcknowledgement);
-
-				if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) == PacketType::Acknowledgement)
-				{
-					client.acknowledged = true;
-					client.ackClock.restart();
-					delete client.packetWaitingForAcknowledgement;
-				}
-			}
-		}
-	});
-	sendThread.detach();
+	networkClientManager.StartThreads(client);
 
 	ConnectPacket connectPacket;
 	std::cout << "Enter your name: ";
@@ -103,9 +45,6 @@ int main()
 		if (messageSent.message == "stop")
 		{
 			running = false;
-			DisconnectPacket disconnectPacket;
-			disconnectPacket.playerName = connectPacket.playerName;
-			PacketManager::SendPacket(*client.socket, disconnectPacket);
 			continue;
 		}
 

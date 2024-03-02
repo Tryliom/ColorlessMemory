@@ -1,12 +1,12 @@
 #pragma once
 
-#include "packetManager.h"
-#include "clientManager.h"
+#include "packet_manager.h"
+#include "client_manager.h"
 
 #include <atomic>
 #include <functional>
 
-class Server
+class NetworkServerManager
 {
 	ClientManager clients;
 	sf::TcpListener listener;
@@ -14,8 +14,8 @@ class Server
 	mutable std::mutex mutex;
 
 public:
-	Server() = default;
-	~Server();
+	NetworkServerManager() = default;
+	~NetworkServerManager();
 
 	std::atomic<bool> running = true;
 
