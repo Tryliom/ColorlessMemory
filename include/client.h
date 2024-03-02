@@ -4,6 +4,7 @@
 
 #include <queue>
 #include <shared_mutex>
+#include <mutex>
 
 struct Client
 {

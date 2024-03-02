@@ -3,6 +3,8 @@
 #include "packetManager.h"
 #include "clientManager.h"
 
+#include <atomic>
+
 class Server
 {
 	ClientManager clients;
