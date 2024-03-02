@@ -42,10 +42,10 @@ add_custom_target(
         DEPENDS ${Data_OUTPUT_FILES}
 )
 
-file(GLOB_RECURSE COMMON_FILES client/*.cpp include/*.h)
+file(GLOB_RECURSE COMMON_FILES src/*.cpp include/*.h)
 add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC include/)
-target_include_directories(Common PUBLIC client/)
+target_include_directories(Common PUBLIC src/)
 target_link_libraries(Common PUBLIC sfml-system sfml-network)
 set_target_properties(Common PROPERTIES UNITY_BUILD ON)
 

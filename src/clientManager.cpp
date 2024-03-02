@@ -59,9 +59,10 @@ void ClientManager::CheckPacketToBeSent()
 {
 	for (auto* client : clients)
 	{
-		std::scoped_lock lock(mutex);
-
 		if (client == nullptr) continue;
+		if (client->IsPacketsEmpty()) continue;
+
+		std::scoped_lock lock(mutex);
 		if (client->packetsToBeSent.empty() && client->packetWaitingForAcknowledgement == nullptr) continue;
 
 		if (client->acknowledged)

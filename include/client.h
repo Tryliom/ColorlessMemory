@@ -3,6 +3,7 @@
 #include <SFML/Network.hpp>
 
 #include <queue>
+#include <shared_mutex>
 
 struct Client
 {
@@ -12,6 +13,7 @@ struct Client
 	std::queue<sf::Packet*> packetsToBeSent = std::queue<sf::Packet*>();
 	bool acknowledged = true;
 	sf::Clock ackClock = sf::Clock();
+	mutable std::shared_mutex mutex_;
 
 	~Client()
 	{
@@ -20,6 +22,13 @@ struct Client
 
 	void SendPacket(sf::Packet* packet)
 	{
+		std::unique_lock lock(mutex_);
 		packetsToBeSent.push(packet);
+	}
+
+	bool IsPacketsEmpty() const
+	{
+		std::shared_lock lock(mutex_);
+		return packetsToBeSent.empty();
 	}
 };
