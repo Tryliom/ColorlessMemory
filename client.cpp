@@ -22,15 +22,13 @@ int main()
 		while (running)
 		{
 			sf::Packet answer;
-			if (client.socket->receive(answer) != sf::Socket::Done)
+			PacketType packetType = PacketManager::ReceivePacket(*client.socket, answer);
+
+			if (packetType == PacketType::Invalid)
 			{
 				LOG_ERROR("Could not receive answer from server");
 				std::exit(EXIT_FAILURE);
 			}
-
-			LOG("Received packet from server");
-
-			PacketType packetType = PacketManager::ReceivePacket(*client.socket, answer);
 
 			if (packetType == PacketType::Message)
 			{
@@ -39,19 +37,13 @@ int main()
 			}
 			else if (packetType == PacketType::Acknowledgement)
 			{
-				LOG("Acknowledgement received");
 				client.acknowledged = true;
 				client.ackClock.restart();
 				delete client.packetWaitingForAcknowledgement;
 				continue;
 			}
-			else
-			{
-				LOG_ERROR("Received invalid packet type");
-			}
 
 			// Send acknowledgement packet
-			client.acknowledged = false;
 			client.SendPacket(PacketManager::CreatePacket(AcknowledgementPacket()));
 		}
 	});
@@ -66,12 +58,7 @@ int main()
 				if (client.ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
 				{
 					// Resend packet
-					if (client.socket->send(*client.packetWaitingForAcknowledgement) != sf::Socket::Done)
-					{
-						LOG_ERROR("Could not send packet to server");
-						std::exit(EXIT_FAILURE);
-					}
-
+					client.socket->send(*client.packetWaitingForAcknowledgement);
 					client.ackClock.restart();
 				}
 			}
@@ -80,18 +67,15 @@ int main()
 				client.packetWaitingForAcknowledgement = client.packetsToBeSent.front();
 				client.packetsToBeSent.pop();
 
-				if (client.socket->send(*client.packetWaitingForAcknowledgement) != sf::Socket::Done)
-				{
-					LOG_ERROR("Could not send packet to server");
-					std::exit(EXIT_FAILURE);
-				}
-
 				if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) != PacketType::Acknowledgement)
 				{
 					client.acknowledged = false;
 					client.ackClock.restart();
 				}
-				else
+
+				client.socket->send(*client.packetWaitingForAcknowledgement);
+
+				if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) == PacketType::Acknowledgement)
 				{
 					client.acknowledged = true;
 					client.ackClock.restart();
@@ -121,11 +105,7 @@ int main()
 			running = false;
 			DisconnectPacket disconnectPacket;
 			disconnectPacket.playerName = connectPacket.playerName;
-			if (!PacketManager::SendPacket(*client.socket, disconnectPacket))
-			{
-				LOG_ERROR("Could not send disconnect packet");
-				return EXIT_FAILURE;
-			}
+			PacketManager::SendPacket(*client.socket, disconnectPacket);
 			continue;
 		}
 

@@ -70,14 +70,13 @@ void Server::ReceivePacketFromClient(std::size_t clientIndex)
 	{
 		// Receive a message from the client
 		sf::Packet answer;
-		if (socket->receive(answer) != sf::Socket::Done)
-		{
-			LOG_ERROR("Could not receive answer from client");
-			receiving = false;
-			continue;
-		}
-
 		PacketType packetType = PacketManager::ReceivePacket(*socket, answer);
+
+		if (packetType == PacketType::Invalid)
+		{
+			LOG_ERROR("Could not receive packet from client");
+			break;
+		}
 
 		switch (packetType)
 		{
@@ -122,12 +121,11 @@ void Server::ReceivePacketFromClient(std::size_t clientIndex)
 		}
 		case PacketType::Acknowledgement:
 		{
-			LOG("Acknowledgement packet received");
 			clients.Acknowledge(clientIndex);
 			break;
 		}
 		default:
-			LOG_ERROR("Invalid packet type received");
+			LOG_ERROR("Unknown packet type received");
 			break;
 		}
 	}

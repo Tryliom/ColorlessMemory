@@ -76,8 +76,6 @@ void ClientManager::CheckPacketToBeSent()
 				// If the packet is a AcknowledgementPacket, do not wait for an acknowledgement
 				if (PacketManager::GetPacketType(*packet) == PacketType::Acknowledgement)
 				{
-					LOG("Acknowledgement packet sent");
-
 					client->acknowledged = true;
 					delete packet;
 					delete client->packetWaitingForAcknowledgement;
