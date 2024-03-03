@@ -1,6 +1,7 @@
 #pragma once
 
 #include "client.h"
+#include "packet.h"
 
 #include <functional>
 

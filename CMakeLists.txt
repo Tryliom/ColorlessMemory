@@ -10,6 +10,7 @@ option(PORT "Set the port" "43845")
 add_definitions("-DHOST_NAME=\"${HOST_NAME}\"")
 add_definitions("-DPORT=${PORT}")
 
+find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system network CONFIG REQUIRED)
 
 add_executable(client main_client.cpp)
@@ -18,6 +19,7 @@ add_executable(server main_server.cpp)
 file(GLOB_RECURSE DATA_FILES
         "data/*.png"
         "data/*.jpg"
+        "data/*.ttf"
 )
 foreach (DATA ${DATA_FILES})
     get_filename_component(FILE_NAME ${DATA} NAME)
@@ -46,8 +48,14 @@ file(GLOB_RECURSE COMMON_FILES src/*.cpp include/*.h)
 add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC include/)
 target_include_directories(Common PUBLIC src/)
-target_link_libraries(Common PUBLIC sfml-system sfml-network)
+target_link_libraries(Common PUBLIC sfml-graphics sfml-audio sfml-window sfml-system sfml-network)
 set_target_properties(Common PROPERTIES UNITY_BUILD ON)
+
+if(MSVC)
+    target_link_libraries(Common PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
+else()
+    target_link_libraries(Common PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES} )
+endif()
 
 target_link_libraries(client PRIVATE Common)
 target_link_libraries(server PRIVATE Common)
