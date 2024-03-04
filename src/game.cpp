@@ -49,11 +49,11 @@ namespace Game
 			_window.close();
 		}
 
-		_networkClientManager.SetOnMessageReceived([](sf::Packet& packet, PacketType packetType)
+		_networkClientManager.SetOnMessageReceived([](const Packet& packet)
 		{
-			if (packetType == PacketType::Message)
+			if (packet.type == PacketType::Message)
 			{
-				MessagePacket messageReceived = PacketManager::GetMessagePacket(packet);
+				MessagePacket messageReceived = dynamic_cast<const MessagePacket&>(packet);
 				LOG(messageReceived.playerName + ": " + messageReceived.message);
 			}
 
@@ -71,7 +71,6 @@ namespace Game
 		}
 	}
 
-
 	void checkInputs(sf::Event event)
 	{
 		if (event.type == sf::Event::Closed)
@@ -82,6 +81,11 @@ namespace Game
 
 		if (_gui != nullptr)
 		{
+			if (event.mouseButton.button == sf::Mouse::Left)
+			{
+				_client.SendPacket(new MessagePacket("Player", "Hello, server!"));
+			}
+
 			_gui->CheckInputs(event);
 		}
 	}

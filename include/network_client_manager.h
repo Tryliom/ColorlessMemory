@@ -9,7 +9,7 @@ class NetworkClientManager
 {
 private:
 	bool running = true;
-	std::function<bool(sf::Packet&, PacketType)> onServerPacketReceived;
+	std::function<bool(const Packet&)> onServerPacketReceived;
 
 	void ReceivePackets(Client& client);
 	void SendPackets(Client& client) const;
@@ -17,6 +17,6 @@ private:
 public:
 	NetworkClientManager() = default;
 
-	void SetOnMessageReceived(std::function<bool(sf::Packet&, PacketType)> onMessageReceived);
+	void SetOnMessageReceived(const std::function<bool(const Packet&)>& onMessageReceived);
 	void StartThreads(Client& client);
 };

@@ -49,12 +49,11 @@ add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC include/)
 target_include_directories(Common PUBLIC src/)
 target_link_libraries(Common PUBLIC sfml-graphics sfml-audio sfml-window sfml-system sfml-network)
-set_target_properties(Common PROPERTIES UNITY_BUILD ON)
 
 if(MSVC)
     target_link_libraries(Common PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
 else()
-    target_link_libraries(Common PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES} )
+    target_link_libraries(Common PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
 endif()
 
 target_link_libraries(client PRIVATE Common)

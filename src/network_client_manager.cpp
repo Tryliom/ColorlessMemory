@@ -7,16 +7,15 @@ void NetworkClientManager::ReceivePackets(Client& client)
 {
 	while (running)
 	{
-		sf::Packet packet;
-		PacketType packetType = PacketManager::ReceivePacket(*client.socket, packet);
+		Packet* packet = PacketManager::ReceivePacket(*client.socket);
 
-		if (packetType == PacketType::Invalid)
+		if (packet->type == PacketType::Invalid)
 		{
 			LOG_ERROR("Could not receive packet");
 			std::exit(EXIT_FAILURE);
 		}
 
-		if (packetType == PacketType::Acknowledgement)
+		if (packet->type == PacketType::Acknowledgement)
 		{
 			client.acknowledged = true;
 			client.ackClock.restart();
@@ -26,11 +25,13 @@ void NetworkClientManager::ReceivePackets(Client& client)
 
 		if (onServerPacketReceived)
 		{
-			running = onServerPacketReceived(packet, packetType);
+			running = onServerPacketReceived(*packet);
 		}
 
 		// Send acknowledgement packet
-		client.SendPacket(PacketManager::CreatePacket(AcknowledgementPacket()));
+		client.SendPacket(new AcknowledgementPacket());
+
+		delete packet;
 	}
 }
 
@@ -43,7 +44,7 @@ void NetworkClientManager::SendPackets(Client& client) const
 			if (client.ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
 			{
 				// Resend packet
-				client.socket->send(*client.packetWaitingForAcknowledgement);
+				client.socket->send(*PacketManager::CreatePacket(client.packetWaitingForAcknowledgement));
 				client.ackClock.restart();
 			}
 		}
@@ -52,15 +53,15 @@ void NetworkClientManager::SendPackets(Client& client) const
 			client.packetWaitingForAcknowledgement = client.packetsToBeSent.front();
 			client.packetsToBeSent.pop();
 
-			if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) != PacketType::Acknowledgement)
+			if (client.packetWaitingForAcknowledgement->type != PacketType::Acknowledgement)
 			{
 				client.acknowledged = false;
 				client.ackClock.restart();
 			}
 
-			client.socket->send(*client.packetWaitingForAcknowledgement);
+			client.socket->send(*PacketManager::CreatePacket(client.packetWaitingForAcknowledgement));
 
-			if (PacketManager::GetPacketType(*client.packetWaitingForAcknowledgement) == PacketType::Acknowledgement)
+			if (client.packetWaitingForAcknowledgement->type == PacketType::Acknowledgement)
 			{
 				client.acknowledged = true;
 				client.ackClock.restart();
@@ -70,9 +71,9 @@ void NetworkClientManager::SendPackets(Client& client) const
 	}
 }
 
-void NetworkClientManager::SetOnMessageReceived(std::function<bool(sf::Packet&, PacketType)> onMessageReceived)
+void NetworkClientManager::SetOnMessageReceived(const std::function<bool(const Packet&)>& onMessageReceived)
 {
-	this->onServerPacketReceived = std::move(onMessageReceived);
+	this->onServerPacketReceived = onMessageReceived;
 }
 
 void NetworkClientManager::StartThreads(Client& client)

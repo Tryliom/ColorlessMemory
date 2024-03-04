@@ -69,13 +69,13 @@ void ClientManager::CheckPacketToBeSent()
 		{
 			auto* packet = client->packetsToBeSent.front();
 
-			if (client->socket->send(*packet) == sf::Socket::Done)
+			if (PacketManager::SendPacket(*client->socket, packet))
 			{
 				client->packetsToBeSent.pop();
 				client->ackClock.restart();
 
 				// If the packet is a AcknowledgementPacket, do not wait for an acknowledgement
-				if (PacketManager::GetPacketType(*packet) == PacketType::Acknowledgement)
+				if (packet->type == PacketType::Acknowledgement)
 				{
 					client->acknowledged = true;
 					delete packet;
@@ -95,7 +95,7 @@ void ClientManager::CheckPacketToBeSent()
 		else if (client->ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
 		{
 			// Resend the packet
-			if (client->socket->send(*client->packetWaitingForAcknowledgement) == sf::Socket::Done)
+			if (PacketManager::SendPacket(*client->socket, client->packetWaitingForAcknowledgement))
 			{
 				client->ackClock.restart();
 			}
@@ -107,7 +107,7 @@ void ClientManager::CheckPacketToBeSent()
 	}
 }
 
-void ClientManager::SendPacketToAllClients(sf::Packet* packet, sf::TcpSocket* sender)
+void ClientManager::SendPacketToAllClients(Packet* packet, sf::TcpSocket* sender)
 {
 	for (auto* c : clients)
 	{

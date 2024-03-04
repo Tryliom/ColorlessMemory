@@ -14,23 +14,23 @@ int main()
 
 	LOG("Server is listening to port " << PORT);
 
-	server.ListenToClientPackets([&server](sf::TcpSocket* socket, const PacketType packetType, sf::Packet packet)
+	server.ListenToClientPackets([&server](sf::TcpSocket* socket, Packet* packet)
 	{
-		if (packetType == PacketType::Connect)
+		if (packet->type == PacketType::Connect)
 		{
-			ConnectPacket connectPacket = PacketManager::GetConnectPacket(packet);
+			auto* connectPacket = dynamic_cast<ConnectPacket*>(packet);
 
-			LOG("New connection received from " << connectPacket.playerName);
-			server.SendMessageToAllClients(MessagePacket{ "Server", connectPacket.playerName + " has joined the server" }, socket);
+			LOG("New connection received from " << connectPacket->playerName);
+			server.SendMessageToAllClients(new MessagePacket("Server", connectPacket->playerName + " has joined the server"), socket);
 		}
 
-		if (packetType == PacketType::Message)
+		if (packet->type == PacketType::Message)
 		{
-			MessagePacket messageReceived = PacketManager::GetMessagePacket(packet);
-			LOG("Message received from " << messageReceived.playerName << ": " << messageReceived.message);
+			auto* messageReceived = dynamic_cast<MessagePacket*>(packet);
+			LOG("Message received from " << messageReceived->playerName << ": " << messageReceived->message);
 
 			// Send a message to all clients
-			server.SendMessageToAllClients(messageReceived, socket);
+			server.SendMessageToAllClients(new MessagePacket(messageReceived->playerName, messageReceived->message), socket);
 		}
 
 		return true;
@@ -50,7 +50,7 @@ int main()
 		}
 		else
 		{
-			server.SendMessageToAllClients(MessagePacket { "Server", input });
+			server.SendMessageToAllClients(new MessagePacket { "Server", input });
 		}
 	}
 

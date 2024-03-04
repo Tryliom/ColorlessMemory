@@ -18,7 +18,7 @@ bool NetworkServerManager::Bind(unsigned short port)
 	return listener.listen(port) == sf::Socket::Done;
 }
 
-void NetworkServerManager::ListenToClientPackets(std::function<bool(sf::TcpSocket*, const PacketType, sf::Packet)> onMessageReceived)
+void NetworkServerManager::ListenToClientPackets(std::function<bool(sf::TcpSocket*, Packet*)> onMessageReceived)
 {
 	this->onClientMessageReceived = std::move(onMessageReceived);
 }
@@ -62,9 +62,9 @@ void NetworkServerManager::StartThreads()
 	packetSender.detach();
 }
 
-void NetworkServerManager::SendMessageToAllClients(const MessagePacket& message, sf::TcpSocket* sender)
+void NetworkServerManager::SendMessageToAllClients(MessagePacket* message, sf::TcpSocket* sender)
 {
-	clients.SendPacketToAllClients(PacketManager::CreatePacket(message), sender);
+	clients.SendPacketToAllClients(message, sender);
 }
 
 void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
@@ -75,16 +75,15 @@ void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 	while (receiving)
 	{
 		// Receive a message from the client
-		sf::Packet answer;
-		PacketType packetType = PacketManager::ReceivePacket(*socket, answer);
+		Packet* packet = PacketManager::ReceivePacket(*socket);
 
-		if (packetType == PacketType::Invalid)
+		if (packet->type == PacketType::Invalid)
 		{
 			LOG_ERROR("Could not receive packet from client");
 			break;
 		}
 
-		if (packetType == PacketType::Acknowledgement)
+		if (packet->type == PacketType::Acknowledgement)
 		{
 			clients.Acknowledge(clientIndex);
 			continue;
@@ -92,13 +91,15 @@ void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 
 		if (onClientMessageReceived)
 		{
-			receiving = onClientMessageReceived(socket, packetType, answer);
+			receiving = onClientMessageReceived(socket, packet);
 
 			if (receiving)
 			{
-				client->packetsToBeSent.push(PacketManager::CreatePacket(AcknowledgementPacket()));
+				client->packetsToBeSent.push(new AcknowledgementPacket());
 			}
 		}
+
+		delete packet;
 	}
 
 	clients.RemoveClient(clientIndex);

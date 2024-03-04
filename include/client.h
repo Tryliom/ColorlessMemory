@@ -1,5 +1,7 @@
 #pragma once
 
+#include "packet.h"
+
 #include <SFML/Network.hpp>
 
 #include <queue>
@@ -10,8 +12,8 @@ struct Client
 {
 	constexpr static sf::Int32 ACK_TIMEOUT = 500;
 	sf::TcpSocket* socket = new sf::TcpSocket();
-	sf::Packet* packetWaitingForAcknowledgement = nullptr;
-	std::queue<sf::Packet*> packetsToBeSent = std::queue<sf::Packet*>();
+	Packet* packetWaitingForAcknowledgement = nullptr;
+	std::queue<Packet*> packetsToBeSent = std::queue<Packet*>();
 	bool acknowledged = true;
 	sf::Clock ackClock = sf::Clock();
 	mutable std::shared_mutex mutex_;
@@ -21,7 +23,7 @@ struct Client
 		delete packetWaitingForAcknowledgement;
 	}
 
-	void SendPacket(sf::Packet* packet)
+	void SendPacket(Packet* packet)
 	{
 		std::unique_lock lock(mutex_);
 		packetsToBeSent.push(packet);

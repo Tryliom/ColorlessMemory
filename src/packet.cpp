@@ -1,30 +1,79 @@
 #include "packet.h"
 
-sf::Packet& operator <<(sf::Packet& packet, const ConnectPacket& message)
+sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 {
-	return packet << static_cast<sf::Uint8>(PacketType::Connect) << message.playerName;
-}
+	packet << static_cast<sf::Uint8>(packetType.type);
 
-sf::Packet& operator >>(sf::Packet& packet, ConnectPacket& message)
-{
-	packet >> message.playerName;
+	switch (packetType.type)
+	{
+	case PacketType::Connect:
+	{
+		const auto& connectPacket = static_cast<const ConnectPacket&>(packetType);
+		packet << connectPacket;
+		break;
+	}
+	case PacketType::Message:
+	{
+		const auto& messagePacket = static_cast<const MessagePacket&>(packetType);
+		packet << messagePacket;
+		break;
+	}
+	case PacketType::Acknowledgement:
+	{
+		const auto& ackPacket = static_cast<const AcknowledgementPacket&>(packetType);
+		packet << ackPacket;
+		break;
+	}
+	default:
+		break;
+	}
+
 	return packet;
 }
 
-sf::Packet& operator <<(sf::Packet& packet, const DisconnectPacket& message)
+sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 {
-	return packet << static_cast<sf::Uint8>(PacketType::Disconnect) << message.playerName;
+	switch (packetType.type)
+	{
+	case PacketType::Connect:
+	{
+		auto* connectPacket = dynamic_cast<ConnectPacket*>(&packetType);
+		packet >> *connectPacket;
+		break;
+	}
+	case PacketType::Message:
+	{
+		auto* messagePacket = dynamic_cast<MessagePacket*>(&packetType);
+		packet >> *messagePacket;
+		break;
+	}
+	case PacketType::Acknowledgement:
+	{
+		auto* ackPacket = dynamic_cast<AcknowledgementPacket*>(&packetType);
+		packet >> *ackPacket;
+		break;
+	}
+	default:
+		break;
+	}
+
+	return packet;
 }
 
-sf::Packet& operator >>(sf::Packet& packet, DisconnectPacket& message)
+sf::Packet& operator <<(sf::Packet& packet, const ConnectPacket& connectPacket)
 {
-	packet >> message.playerName;
+	return packet << connectPacket.playerName;
+}
+
+sf::Packet& operator >>(sf::Packet& packet, ConnectPacket& connectPacket)
+{
+	packet >> connectPacket.playerName;
 	return packet;
 }
 
 sf::Packet& operator <<(sf::Packet& packet, const MessagePacket& message)
 {
-	return packet << static_cast<sf::Uint8>(PacketType::Message) << message.playerName << message.message;
+	return packet << message.playerName << message.message;
 }
 
 sf::Packet& operator >>(sf::Packet& packet, MessagePacket& message)
@@ -35,7 +84,7 @@ sf::Packet& operator >>(sf::Packet& packet, MessagePacket& message)
 
 sf::Packet& operator <<(sf::Packet& packet, const AcknowledgementPacket& message)
 {
-	return packet << static_cast<sf::Uint8>(PacketType::Acknowledgement) << message.success;
+	return packet << message.success;
 }
 
 sf::Packet& operator >>(sf::Packet& packet, AcknowledgementPacket& message)

@@ -25,7 +25,7 @@ public:
 	 * @brief Check packet to be sent for all clients
 	 */
 	void CheckPacketToBeSent();
-	void SendPacketToAllClients(sf::Packet* packet, sf::TcpSocket* sender = nullptr);
+	void SendPacketToAllClients(Packet* packet, sf::TcpSocket* sender = nullptr);
 
 	Client* operator[](std::size_t index);
 };
