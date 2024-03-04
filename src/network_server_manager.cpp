@@ -83,20 +83,9 @@ void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 			break;
 		}
 
-		if (packet->type == PacketType::Acknowledgement)
-		{
-			clients.Acknowledge(clientIndex);
-			continue;
-		}
-
 		if (onClientMessageReceived)
 		{
 			receiving = onClientMessageReceived(socket, packet);
-
-			if (receiving)
-			{
-				client->packetsToBeSent.push(new AcknowledgementPacket());
-			}
 		}
 
 		delete packet;

@@ -49,12 +49,6 @@ void ClientManager::RemoveClient(std::size_t index)
 	clients[index] = nullptr;
 }
 
-void ClientManager::Acknowledge(std::size_t index)
-{
-	std::scoped_lock lock(mutex);
-	clients[index]->acknowledged = true;
-}
-
 void ClientManager::CheckPacketToBeSent()
 {
 	for (auto* client : clients)
@@ -63,47 +57,14 @@ void ClientManager::CheckPacketToBeSent()
 		if (client->IsPacketsEmpty()) continue;
 
 		std::scoped_lock lock(mutex);
-		if (client->packetsToBeSent.empty() && client->packetWaitingForAcknowledgement == nullptr) continue;
 
-		if (client->acknowledged)
-		{
-			auto* packet = client->packetsToBeSent.front();
+		if (client->packetsToBeSent.empty()) continue;
 
-			if (PacketManager::SendPacket(*client->socket, packet))
-			{
-				client->packetsToBeSent.pop();
-				client->ackClock.restart();
+		auto* packet = client->packetsToBeSent.front();
 
-				// If the packet is a AcknowledgementPacket, do not wait for an acknowledgement
-				if (packet->type == PacketType::Acknowledgement)
-				{
-					client->acknowledged = true;
-					delete packet;
-					delete client->packetWaitingForAcknowledgement;
-					client->packetWaitingForAcknowledgement = nullptr;
-					continue;
-				}
-
-				client->acknowledged = false;
-				client->packetWaitingForAcknowledgement = packet;
-			}
-			else
-			{
-				LOG_ERROR("Could not send packet to client");
-			}
-		}
-		else if (client->ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
-		{
-			// Resend the packet
-			if (PacketManager::SendPacket(*client->socket, client->packetWaitingForAcknowledgement))
-			{
-				client->ackClock.restart();
-			}
-			else
-			{
-				LOG_ERROR("Could not resend packet to client");
-			}
-		}
+		PacketManager::SendPacket(*client->socket, packet);
+		client->packetsToBeSent.pop();
+		delete packet;
 	}
 }
 

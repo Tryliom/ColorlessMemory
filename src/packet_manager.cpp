@@ -26,22 +26,7 @@ namespace PacketManager
 		packet >> packetTypeUint;
 		auto packetType = static_cast<PacketType>(packetTypeUint);
 
-		Packet* ourPacket;
-		switch (packetType)
-		{
-		case PacketType::Connect:
-			ourPacket = new ConnectPacket();
-			break;
-		case PacketType::Message:
-			ourPacket = new MessagePacket();
-			break;
-		case PacketType::Acknowledgement:
-			ourPacket = new AcknowledgementPacket();
-			break;
-		default:
-			ourPacket = new InvalidPacket();
-			break;
-		}
+		Packet* ourPacket = Packet::FromType(packetType);
 
 		packet >> *ourPacket;
 

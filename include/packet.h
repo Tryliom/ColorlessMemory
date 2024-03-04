@@ -7,7 +7,6 @@ enum class PacketType
 {
 	Connect,
 	Message,
-	Acknowledgement,
 	Invalid
 };
 
@@ -20,6 +19,8 @@ struct Packet
 	virtual ~Packet() = default;
 
 	PacketType type = PacketType::Invalid;
+
+	static Packet* FromType(PacketType type);
 };
 
 struct ConnectPacket final : Packet
@@ -40,13 +41,6 @@ struct MessagePacket final : Packet
 	std::string message;
 };
 
-struct AcknowledgementPacket final : Packet
-{
-	AcknowledgementPacket() : Packet(PacketType::Acknowledgement) {}
-
-	bool success = true;
-};
-
 struct InvalidPacket final : Packet
 {
 	InvalidPacket() : Packet(PacketType::Invalid) {}
@@ -60,6 +54,3 @@ sf::Packet& operator >>(sf::Packet& packet, ConnectPacket& connectPacket);
 
 sf::Packet& operator <<(sf::Packet& packet, const MessagePacket& message);
 sf::Packet& operator >>(sf::Packet& packet, MessagePacket& message);
-
-sf::Packet& operator <<(sf::Packet& packet, const AcknowledgementPacket& message);
-sf::Packet& operator >>(sf::Packet& packet, AcknowledgementPacket& message);

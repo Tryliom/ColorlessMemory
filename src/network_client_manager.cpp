@@ -15,21 +15,10 @@ void NetworkClientManager::ReceivePackets(Client& client)
 			std::exit(EXIT_FAILURE);
 		}
 
-		if (packet->type == PacketType::Acknowledgement)
-		{
-			client.acknowledged = true;
-			client.ackClock.restart();
-			delete client.packetWaitingForAcknowledgement;
-			continue;
-		}
-
 		if (onServerPacketReceived)
 		{
 			running = onServerPacketReceived(*packet);
 		}
-
-		// Send acknowledgement packet
-		client.SendPacket(new AcknowledgementPacket());
 
 		delete packet;
 	}
@@ -39,35 +28,14 @@ void NetworkClientManager::SendPackets(Client& client) const
 {
 	while (running)
 	{
-		if (!client.acknowledged)
-		{
-			if (client.ackClock.getElapsedTime().asMilliseconds() > Client::ACK_TIMEOUT)
-			{
-				// Resend packet
-				client.socket->send(*PacketManager::CreatePacket(client.packetWaitingForAcknowledgement));
-				client.ackClock.restart();
-			}
-		}
-		else if (!client.packetsToBeSent.empty())
-		{
-			client.packetWaitingForAcknowledgement = client.packetsToBeSent.front();
-			client.packetsToBeSent.pop();
+		if (client.packetsToBeSent.empty()) continue;
 
-			if (client.packetWaitingForAcknowledgement->type != PacketType::Acknowledgement)
-			{
-				client.acknowledged = false;
-				client.ackClock.restart();
-			}
-
-			client.socket->send(*PacketManager::CreatePacket(client.packetWaitingForAcknowledgement));
-
-			if (client.packetWaitingForAcknowledgement->type == PacketType::Acknowledgement)
-			{
-				client.acknowledged = true;
-				client.ackClock.restart();
-				delete client.packetWaitingForAcknowledgement;
-			}
-		}
+		auto* packet = client.packetsToBeSent.front();
+		auto* sfPacket = PacketManager::CreatePacket(packet);
+		client.packetsToBeSent.pop();
+		client.socket->send(*sfPacket);
+		delete packet;
+		delete sfPacket;
 	}
 }
 

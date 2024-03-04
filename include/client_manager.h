@@ -19,8 +19,6 @@ public:
 	std::size_t AddClient(sf::TcpSocket* socket);
 	void RemoveClient(std::size_t index);
 
-	void Acknowledge(std::size_t index);
-
 	/**
 	 * @brief Check packet to be sent for all clients
 	 */
