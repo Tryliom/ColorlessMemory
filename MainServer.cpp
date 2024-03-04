@@ -1,5 +1,5 @@
-#include "network_server_manager.h"
-#include "logger.h"
+#include "NetworkServerManager.h"
+#include "Logger.h"
 
 int main()
 {

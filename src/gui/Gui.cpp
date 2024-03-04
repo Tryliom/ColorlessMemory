@@ -1,6 +1,6 @@
 #include "gui/Gui.h"
 
-#include "game.h"
+#include "Game.h"
 
 Gui::Gui()
 {
@@ -54,6 +54,8 @@ void Gui::Update(const sf::Time elapsed)
 			}
 		}
 	}
+
+	OnUpdate(elapsed);
 }
 
 void Gui::CheckInputs(const sf::Event event)
@@ -72,4 +74,6 @@ void Gui::CheckInputs(const sf::Event event)
 			}
 		}
 	}
+
+	OnCheckInputs(event);
 }

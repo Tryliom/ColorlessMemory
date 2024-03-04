@@ -1,7 +1,7 @@
 #pragma once
 
-#include "packet_manager.h"
-#include "client_manager.h"
+#include "PacketManager.h"
+#include "ClientManager.h"
 
 #include <atomic>
 #include <functional>

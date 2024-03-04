@@ -1,7 +1,7 @@
-#include "network_client_manager.h"
+#include "NetworkClientManager.h"
 
-#include "packet_manager.h"
-#include "logger.h"
+#include "PacketManager.h"
+#include "Logger.h"
 
 void NetworkClientManager::ReceivePackets(Client& client)
 {

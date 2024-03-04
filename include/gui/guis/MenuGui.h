@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gui/gui.h"
+#include "gui/Gui.h"
 
 class MenuGui final : public Gui
 {

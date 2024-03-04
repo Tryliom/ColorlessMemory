@@ -1,5 +1,5 @@
-#include "asset_manager.h"
-#include "game.h"
+#include "AssetManager.h"
+#include "Game.h"
 
 int main()
 {

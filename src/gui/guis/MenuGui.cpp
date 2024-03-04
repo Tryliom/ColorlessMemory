@@ -1,6 +1,6 @@
-#include "gui/guis/menu_gui.h"
+#include "gui/guis/MenuGui.h"
 
-#include "game.h"
+#include "Game.h"
 
 MenuGui::MenuGui()
 {
@@ -15,7 +15,7 @@ MenuGui::MenuGui()
 		TextLine({CustomText{ .Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
 	});
 	playButton.SetOnClick([]() {
-		//TODO: Launch lobby menu
+		Game::SetState(GameState::LOBBY);
 	});
 
 	_buttons.emplace_back(playButton);

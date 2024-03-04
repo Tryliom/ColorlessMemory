@@ -1,6 +1,6 @@
-#include "gui/text.h"
+#include "gui/Text.h"
 
-#include "asset_manager.h"
+#include "AssetManager.h"
 
 sf::Text CustomText::ToSfText() const
 {

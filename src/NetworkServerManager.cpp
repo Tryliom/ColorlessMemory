@@ -1,6 +1,6 @@
-#include "network_server_manager.h"
+#include "NetworkServerManager.h"
 
-#include "logger.h"
+#include "Logger.h"
 
 #include <thread>
 #include <queue>

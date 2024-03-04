@@ -1,6 +1,6 @@
-#include "packet_manager.h"
+#include "PacketManager.h"
 
-#include "logger.h"
+#include "Logger.h"
 
 namespace PacketManager
 {

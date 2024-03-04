@@ -1,5 +1,5 @@
-#include "gui/button.h"
-#include "game.h"
+#include "gui/Button.h"
+#include "Game.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -46,7 +46,7 @@ Button::Button(const sf::Vector2f position, const sf::Vector2f size, const bool 
 	_position = position;
 	_centered = centered;
 
-	_backgroundColor = sf::Color(0, 0, 0, 55);
+	_backgroundColor = sf::Color(0, 0, 0, 120);
 	_hoverBackgroundColor = sf::Color(0, 0, 0, 255);
 	_borderColor = sf::Color::White;
 	_hoverBorderColor = sf::Color::White;

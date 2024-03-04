@@ -5,7 +5,8 @@
 enum class GameState
 {
 	NONE,
-	MAIN_MENU
+	MAIN_MENU,
+	LOBBY
 };
 
 namespace Game

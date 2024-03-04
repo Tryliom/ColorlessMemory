@@ -1,6 +1,6 @@
 #pragma once
 
-#include "text.h"
+#include "Text.h"
 
 #include <SFML/Graphics.hpp>
 

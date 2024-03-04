@@ -1,7 +1,7 @@
 #pragma once
 
-#include "button.h"
-#include "text.h"
+#include "Button.h"
+#include "Text.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -17,7 +17,10 @@ protected:
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+	virtual void OnUpdate(sf::Time elapsed) {}
+	virtual void OnCheckInputs(sf::Event event) {}
+
 public:
-	virtual void Update(sf::Time elapsed);
-	virtual void CheckInputs(sf::Event event);
+	void Update(sf::Time elapsed);
+	void CheckInputs(sf::Event event);
 };

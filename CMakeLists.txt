@@ -13,8 +13,8 @@ add_definitions("-DPORT=${PORT}")
 find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system network CONFIG REQUIRED)
 
-add_executable(client main_client.cpp)
-add_executable(server main_server.cpp)
+add_executable(client MainClient.cpp)
+add_executable(server MainServer.cpp)
 
 file(GLOB_RECURSE DATA_FILES
         "data/*.png"

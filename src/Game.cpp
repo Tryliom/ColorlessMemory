@@ -1,11 +1,12 @@
-#include "game.h"
+#include "Game.h"
 
-#include "gui/guis/menu_gui.h"
-#include "asset_manager.h"
+#include "NetworkClientManager.h"
+#include "PacketManager.h"
+#include "Logger.h"
 
-#include "network_client_manager.h"
-#include "packet_manager.h"
-#include "logger.h"
+#include "AssetManager.h"
+#include "gui/guis/MenuGui.h"
+#include "gui/guis/LobbyGui.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -23,6 +24,9 @@ namespace Game
 	GameState _state = GameState::NONE;
 	sf::RectangleShape _background;
 
+	bool onPacketReceived(const Packet& packet);
+	void setBackground(const sf::Texture& texture);
+
 	void Initialize()
 	{
 		_window.setFramerateLimit(165);
@@ -32,12 +36,7 @@ namespace Game
 		Game::HEIGHT = static_cast<float>(_window.getSize().y);
 		Game::WIDTH = static_cast<float>(_window.getSize().x);
 
-		auto& backgroundTexture = AssetManager::GetTexture(TextureType::BACKGROUND);
-
-		_background.setTexture(&backgroundTexture);
-		_background.setSize(sf::Vector2f(backgroundTexture.getSize()));
-		_background.setPosition(0, 0);
-
+		setBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
 		SetState(GameState::MAIN_MENU);
 
 		// Network
@@ -49,18 +48,19 @@ namespace Game
 			_window.close();
 		}
 
-		_networkClientManager.SetOnMessageReceived([](const Packet& packet)
-		{
-			if (packet.type == PacketType::Message)
-			{
-				MessagePacket messageReceived = dynamic_cast<const MessagePacket&>(packet);
-				LOG(messageReceived.playerName + ": " + messageReceived.message);
-			}
-
-			return true;
-		});
-
+		_networkClientManager.SetOnMessageReceived(Game::onPacketReceived);
 		_networkClientManager.StartThreads(_client);
+	}
+
+	bool onPacketReceived(const Packet& packet)
+	{
+		if (packet.type == PacketType::Message)
+		{
+			MessagePacket messageReceived = dynamic_cast<const MessagePacket&>(packet);
+			LOG(messageReceived.playerName + ": " + messageReceived.message);
+		}
+
+		return true;
 	}
 
 	void update(sf::Time elapsed)
@@ -101,6 +101,13 @@ namespace Game
 
 	}
 
+	void setBackground(const sf::Texture& texture)
+	{
+		_background.setTexture(&texture);
+		_background.setSize(sf::Vector2f(texture.getSize()));
+		_background.setPosition(0, 0);
+	}
+
 	int Loop()
 	{
 		sf::Clock clock;
@@ -133,6 +140,11 @@ namespace Game
 		if (state == GameState::MAIN_MENU)
 		{
 			_gui = new MenuGui();
+		}
+
+		if (state == GameState::LOBBY)
+		{
+			_gui = new LobbyGui();
 		}
 
 		_state = state;
