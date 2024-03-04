@@ -5,8 +5,9 @@
 
 enum class PacketType
 {
-	Connect,
-	Message,
+	JoinLobby,
+	LeaveLobby,
+	StartGame,
 	Invalid
 };
 
@@ -23,22 +24,27 @@ struct Packet
 	static Packet* FromType(PacketType type);
 };
 
-struct ConnectPacket final : Packet
+struct JoinLobbyPacket final : Packet
 {
-	ConnectPacket() : Packet(PacketType::Connect) {}
-	explicit ConnectPacket(std::string_view playerName) : Packet(PacketType::Connect), playerName(playerName) {}
+	JoinLobbyPacket() : Packet(PacketType::JoinLobby) {}
+	JoinLobbyPacket(bool isHost, bool waitingForOpponent) : Packet(PacketType::JoinLobby), IsHost(isHost), WaitingForOpponent(waitingForOpponent) {}
 
-	std::string playerName;
+	bool IsHost{};
+	bool WaitingForOpponent{};
 };
 
-struct MessagePacket final : Packet
+struct LeaveLobbyPacket final : Packet
 {
-	MessagePacket() : Packet(PacketType::Message) {}
-	MessagePacket(std::string_view playerName, std::string_view message) :
-		Packet(PacketType::Message), playerName(playerName), message(message) {}
+	LeaveLobbyPacket() : Packet(PacketType::LeaveLobby) {}
+};
 
-	std::string playerName;
-	std::string message;
+struct StartGamePacket final : Packet
+{
+	StartGamePacket() : Packet(PacketType::StartGame) {}
+	explicit StartGamePacket(bool yourTurn) : Packet(PacketType::StartGame), YourTurn(yourTurn) {}
+
+	//TODO: Remove this and pass informations with UpdateGamePacket which contains the turn, score, etc
+	bool YourTurn{};
 };
 
 struct InvalidPacket final : Packet
@@ -49,8 +55,11 @@ struct InvalidPacket final : Packet
 sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType);
 sf::Packet& operator >>(sf::Packet& packet, Packet& packetType);
 
-sf::Packet& operator <<(sf::Packet& packet, const ConnectPacket& connectPacket);
-sf::Packet& operator >>(sf::Packet& packet, ConnectPacket& connectPacket);
+sf::Packet& operator <<(sf::Packet& packet, const JoinLobbyPacket& joinLobbyPacket);
+sf::Packet& operator >>(sf::Packet& packet, JoinLobbyPacket& joinLobbyPacket);
 
-sf::Packet& operator <<(sf::Packet& packet, const MessagePacket& message);
-sf::Packet& operator >>(sf::Packet& packet, MessagePacket& message);
+sf::Packet& operator <<(sf::Packet& packet, const LeaveLobbyPacket& leaveLobbyPacket);
+sf::Packet& operator >>(sf::Packet& packet, LeaveLobbyPacket& leaveLobbyPacket);
+
+sf::Packet& operator <<(sf::Packet& packet, const StartGamePacket& startGamePacket);
+sf::Packet& operator >>(sf::Packet& packet, StartGamePacket& startGamePacket);

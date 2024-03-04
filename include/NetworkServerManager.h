@@ -31,12 +31,6 @@ public:
 	 */
 	void StartThreads();
 	/**
-	 * @brief Send a message to all clients
-	 * @param message The message to be sent
-	 * @param sender The client that sent the message, if any
-	 */
-	void SendMessageToAllClients(MessagePacket* message, sf::TcpSocket* sender = nullptr);
-	/**
 	 * @brief Send a message to a specific client
 	 * @param clientIndex The index of the client to send the message to
 	 */

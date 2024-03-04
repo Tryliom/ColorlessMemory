@@ -4,8 +4,9 @@ Packet* Packet::FromType(PacketType type)
 {
 	switch (type)
 	{
-	case PacketType::Connect: return new ConnectPacket();
-	case PacketType::Message: return new MessagePacket();
+	case PacketType::JoinLobby: return new JoinLobbyPacket();
+	case PacketType::LeaveLobby: return new LeaveLobbyPacket();
+	case PacketType::StartGame: return new StartGamePacket();
 	default: return new InvalidPacket();
 	}
 }
@@ -16,16 +17,22 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 
 	switch (packetType.type)
 	{
-	case PacketType::Connect:
+	case PacketType::JoinLobby:
 	{
-		const auto& connectPacket = dynamic_cast<const ConnectPacket&>(packetType);
-		packet << connectPacket;
+		const auto& joinLobbyPacket = dynamic_cast<const JoinLobbyPacket&>(packetType);
+		packet << joinLobbyPacket;
 		break;
 	}
-	case PacketType::Message:
+	case PacketType::LeaveLobby:
 	{
-		const auto& messagePacket = dynamic_cast<const MessagePacket&>(packetType);
-		packet << messagePacket;
+		const auto& leaveLobbyPacket = dynamic_cast<const LeaveLobbyPacket&>(packetType);
+		packet << leaveLobbyPacket;
+		break;
+	}
+	case PacketType::StartGame:
+	{
+		const auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packetType);
+		packet << startGamePacket;
 		break;
 	}
 	default:
@@ -39,16 +46,22 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 {
 	switch (packetType.type)
 	{
-	case PacketType::Connect:
+	case PacketType::JoinLobby:
 	{
-		auto* connectPacket = dynamic_cast<ConnectPacket*>(&packetType);
-		packet >> *connectPacket;
+		auto* joinLobbyPacket = dynamic_cast<JoinLobbyPacket*>(&packetType);
+		packet >> *joinLobbyPacket;
 		break;
 	}
-	case PacketType::Message:
+	case PacketType::LeaveLobby:
 	{
-		auto* messagePacket = dynamic_cast<MessagePacket*>(&packetType);
-		packet >> *messagePacket;
+		auto* leaveLobbyPacket = dynamic_cast<LeaveLobbyPacket*>(&packetType);
+		packet >> *leaveLobbyPacket;
+		break;
+	}
+	case PacketType::StartGame:
+	{
+		auto* startGamePacket = dynamic_cast<StartGamePacket*>(&packetType);
+		packet >> *startGamePacket;
 		break;
 	}
 	default:
@@ -58,24 +71,32 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 	return packet;
 }
 
-sf::Packet& operator <<(sf::Packet& packet, const ConnectPacket& connectPacket)
+sf::Packet& operator <<(sf::Packet& packet, const JoinLobbyPacket& joinLobbyPacket)
 {
-	return packet << connectPacket.playerName;
+	return packet << joinLobbyPacket.IsHost << joinLobbyPacket.WaitingForOpponent;
 }
 
-sf::Packet& operator >>(sf::Packet& packet, ConnectPacket& connectPacket)
+sf::Packet& operator >>(sf::Packet& packet, JoinLobbyPacket& joinLobbyPacket)
 {
-	packet >> connectPacket.playerName;
+	return packet >> joinLobbyPacket.IsHost >> joinLobbyPacket.WaitingForOpponent;
+}
+
+sf::Packet& operator <<(sf::Packet& packet, const LeaveLobbyPacket& leaveLobbyPacket)
+{
 	return packet;
 }
 
-sf::Packet& operator <<(sf::Packet& packet, const MessagePacket& message)
+sf::Packet& operator >>(sf::Packet& packet, LeaveLobbyPacket& leaveLobbyPacket)
 {
-	return packet << message.playerName << message.message;
+	return packet;
 }
 
-sf::Packet& operator >>(sf::Packet& packet, MessagePacket& message)
+sf::Packet& operator <<(sf::Packet& packet, const StartGamePacket& startGamePacket)
 {
-	packet >> message.playerName >> message.message;
-	return packet;
+	return packet << startGamePacket.YourTurn;
+}
+
+sf::Packet& operator >>(sf::Packet& packet, StartGamePacket& startGamePacket)
+{
+	return packet >> startGamePacket.YourTurn;
 }

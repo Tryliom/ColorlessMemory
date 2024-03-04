@@ -7,6 +7,7 @@
 #include "AssetManager.h"
 #include "gui/guis/MenuGui.h"
 #include "gui/guis/LobbyGui.h"
+#include "gui/guis/GameGui.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -23,6 +24,10 @@ namespace Game
 	Gui* _gui { nullptr };
 	GameState _state = GameState::NONE;
 	sf::RectangleShape _background;
+
+	// Game data
+	LobbyData _lobby;
+	GameData _game;
 
 	bool onPacketReceived(const Packet& packet);
 	void setBackground(const sf::Texture& texture);
@@ -48,16 +53,27 @@ namespace Game
 			_window.close();
 		}
 
-		_networkClientManager.SetOnMessageReceived(Game::onPacketReceived);
 		_networkClientManager.StartThreads(_client);
 	}
 
 	bool onPacketReceived(const Packet& packet)
 	{
-		if (packet.type == PacketType::Message)
+		if (packet.type == PacketType::JoinLobby)
 		{
-			MessagePacket messageReceived = dynamic_cast<const MessagePacket&>(packet);
-			LOG(messageReceived.playerName + ": " + messageReceived.message);
+			auto& joinLobbyPacket = dynamic_cast<const JoinLobbyPacket&>(packet);
+
+			_lobby.IsHost = joinLobbyPacket.IsHost;
+			_lobby.WaitingForOpponent = joinLobbyPacket.WaitingForOpponent;
+			_game.Reset();
+		}
+		else if (packet.type == PacketType::StartGame)
+		{
+			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
+
+			_game.YourTurn = startGamePacket.YourTurn;
+			_game.ReadyToStart = true;
+
+			SetState(GameState::GAME);
 		}
 
 		return true;
@@ -68,6 +84,12 @@ namespace Game
 		if (_gui != nullptr)
 		{
 			_gui->Update(elapsed);
+		}
+
+		while (Packet* packet = _networkClientManager.PopPacket())
+		{
+			onPacketReceived(*packet);
+			delete packet;
 		}
 	}
 
@@ -98,7 +120,6 @@ namespace Game
 		}
 
 		_window.display();
-
 	}
 
 	void setBackground(const sf::Texture& texture)
@@ -108,7 +129,7 @@ namespace Game
 		_background.setPosition(0, 0);
 	}
 
-	int Loop()
+	int StartLoop()
 	{
 		sf::Clock clock;
 
@@ -132,10 +153,9 @@ namespace Game
 
 	void SetState(GameState state)
 	{
-		if (_state == state)
-		{
-			return;
-		}
+		if (_state == state) return;
+
+		delete _gui;
 
 		if (state == GameState::MAIN_MENU)
 		{
@@ -145,6 +165,14 @@ namespace Game
 		if (state == GameState::LOBBY)
 		{
 			_gui = new LobbyGui();
+			_lobby.IsHost = true;
+			_lobby.WaitingForOpponent = true;
+			SendPacket(new JoinLobbyPacket());
+		}
+
+		if (state == GameState::GAME)
+		{
+			_gui = new GameGui();
 		}
 
 		_state = state;
@@ -153,5 +181,20 @@ namespace Game
 	void Exit()
 	{
 		_window.close();
+	}
+
+	void Game::SendPacket(Packet* packet)
+	{
+		_client.SendPacket(packet);
+	}
+
+	LobbyData& GetLobby()
+	{
+		return _lobby;
+	}
+
+	GameData& GetGame()
+	{
+		return _game;
 	}
 }

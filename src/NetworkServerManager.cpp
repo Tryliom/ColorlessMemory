@@ -62,11 +62,6 @@ void NetworkServerManager::StartThreads()
 	packetSender.detach();
 }
 
-void NetworkServerManager::SendMessageToAllClients(MessagePacket* message, sf::TcpSocket* sender)
-{
-	clients.SendPacketToAllClients(message, sender);
-}
-
 void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 {
 	bool receiving = true;

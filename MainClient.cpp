@@ -6,5 +6,5 @@ int main()
 	AssetManager::Initialize();
 	Game::Initialize();
 
-	return Game::Loop();
+	return Game::StartLoop();
 }

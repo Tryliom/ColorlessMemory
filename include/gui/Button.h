@@ -72,7 +72,7 @@ public:
 
 	void SetOnClick(const std::function<void()>& onClick);
 
-	void Show()
+	void Enable()
 	{
 		_disabled = false;
 	}

@@ -74,6 +74,4 @@ void Gui::CheckInputs(const sf::Event event)
 			}
 		}
 	}
-
-	OnCheckInputs(event);
 }

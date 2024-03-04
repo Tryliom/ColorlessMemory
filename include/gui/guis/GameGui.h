@@ -2,12 +2,10 @@
 
 #include "gui/Gui.h"
 
-class LobbyGui final : public Gui
+class GameGui final : public Gui
 {
-	bool _ready{ false };
-
 public:
-	explicit LobbyGui();
+	explicit GameGui();
 
 	void OnUpdate(sf::Time elapsed) override;
 };
