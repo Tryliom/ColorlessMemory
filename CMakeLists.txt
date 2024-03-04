@@ -4,8 +4,8 @@ project(ColorlessMemory)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(HOST_NAME "Set the host name" "localhost")
-option(PORT "Set the port" "43845")
+set(HOST_NAME "localhost" CACHE STRING "Set the host name")
+set(PORT "43845" CACHE STRING "Set the port")
 
 add_definitions("-DHOST_NAME=\"${HOST_NAME}\"")
 add_definitions("-DPORT=${PORT}")
