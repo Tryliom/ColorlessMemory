@@ -32,7 +32,7 @@ Text::Text(sf::Vector2f position, const std::vector<TextLine>& texts, float maxX
 			if (_centered)
 			{
 				const auto bounds = text.getGlobalBounds();
-				text.setOrigin(bounds.width / 2, bounds.height / 2 + 2);
+				text.setOrigin(bounds.width / 2, bounds.height * 0.75f);
 			}
 
 			if (maxX > 0.f)

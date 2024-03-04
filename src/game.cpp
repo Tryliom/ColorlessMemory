@@ -16,7 +16,7 @@ namespace Game
 	NetworkClientManager _networkClientManager;
 
 	// Game display and physics
-	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(1920, 1080), "Colorless Memory", sf::Style::Default));
+	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(Game::WIDTH, Game::HEIGHT), "Colorless Memory", sf::Style::Default));
 
 	// Gui
 	Gui* _gui { nullptr };
@@ -81,11 +81,6 @@ namespace Game
 
 		if (_gui != nullptr)
 		{
-			if (event.mouseButton.button == sf::Mouse::Left)
-			{
-				_client.SendPacket(new MessagePacket("Player", "Hello, server!"));
-			}
-
 			_gui->CheckInputs(event);
 		}
 	}

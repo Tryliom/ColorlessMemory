@@ -72,8 +72,8 @@ void Button::SetText(const std::vector<TextLine>& texts)
 
 	if (!_centered)
 	{
-		position.x += _background.getSize().x / 20.f;
-		position.y += _background.getSize().y / 20.f;
+		position.x += _background.getSize().x / 2.f;
+		position.y += _background.getSize().y / 2.f;
 	}
 
 	_text = Text(position, texts, _background.getSize().x, _centered);

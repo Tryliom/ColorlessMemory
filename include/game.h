@@ -11,8 +11,8 @@ enum class GameState
 namespace Game
 {
 	inline static const float PI = 3.14159265359f;
-	inline static float HEIGHT = 0.f;
-	inline static float WIDTH = 0.f;
+	inline static float HEIGHT = 1080.f;
+	inline static float WIDTH = 1920.f;
 
 	void Initialize();
 	int Loop();
