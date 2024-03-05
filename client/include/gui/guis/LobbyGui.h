@@ -4,10 +4,8 @@
 
 class LobbyGui final : public Gui
 {
-	bool _ready{ false };
-
 public:
 	explicit LobbyGui();
 
-	void OnUpdate(sf::Time elapsed) override;
+	void OnPacketReceived(const Packet& packet) override;
 };

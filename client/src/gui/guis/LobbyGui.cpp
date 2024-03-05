@@ -26,7 +26,6 @@ LobbyGui::LobbyGui()
 		{});
 	});
 	launchButton.Disable();
-	_ready = false;
 
 	_buttons.emplace_back(launchButton);
 
@@ -69,32 +68,32 @@ LobbyGui::LobbyGui()
 	_texts.emplace_back(waiting);
 }
 
-void LobbyGui::OnUpdate(sf::Time elapsed)
+void LobbyGui::OnPacketReceived(const Packet& packet)
 {
-	if (Game::GetGame().ReadyToStart)
+	if (packet.type == PacketType::StartGame)
 	{
 		Game::SetState(GameState::GAME);
-		return;
 	}
-
-	const auto& lobby = Game::GetLobby();
-
-	if (_ready && (!lobby.IsHost || lobby.WaitingForOpponent))
+	else if (packet.type == PacketType::JoinLobby)
 	{
-		_buttons[0].Disable();
-		_ready = false;
-	}
-	else if (!_ready && !lobby.WaitingForOpponent)
-	{
-		_ready = true;
-		if (lobby.IsHost) _buttons[0].Enable();
-		_texts[1] = Text(
-				sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT / 2.f),
-				{
-						TextLine({ CustomText{ .Text = "Ready to start !", .Size = 30 }})
-				},
-				-1,
-				true
-		);
+		const auto& lobby = Game::GetLobby();
+
+		if (lobby.WaitingForOpponent)
+		{
+			_buttons[0].Disable();
+			_texts[1] = Text(
+					sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT / 2.f),
+					{ TextLine({ CustomText{ .Text = "Waiting for opponent...", .Size = 30 }}) }
+			);
+		}
+		else
+		{
+			if (lobby.IsHost) _buttons[0].Enable();
+			else _buttons[0].Disable();
+			_texts[1] = Text(
+					sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT / 2.f),
+					{ TextLine({ CustomText{ .Text = "Ready to start !", .Size = 30 }}) }
+			);
+		}
 	}
 }

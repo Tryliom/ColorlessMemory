@@ -2,6 +2,7 @@
 
 #include "Button.h"
 #include "Text.h"
+#include "Packet.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -22,5 +23,5 @@ protected:
 public:
 	void Update(sf::Time elapsed);
 	void CheckInputs(sf::Event event);
-	//TODO: Add OnPacketReceived
+	virtual void OnPacketReceived(const Packet& packet) {}
 };

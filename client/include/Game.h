@@ -29,7 +29,6 @@ struct CardData
 
 struct GameData
 {
-	bool ReadyToStart{};
 	// 50 cards in 5x10 grid
 	std::array<CardData, 50> Cards;
 	std::size_t PlayerScore{};
@@ -38,7 +37,6 @@ struct GameData
 
 	void Reset()
 	{
-		ReadyToStart = false;
 		PlayerScore = 0;
 		OpponentScore = 0;
 		YourTurn = false;

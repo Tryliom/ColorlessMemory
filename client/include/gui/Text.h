@@ -21,7 +21,7 @@ class Text : public sf::Drawable
 {
 public:
 	Text() = default;
-	Text(sf::Vector2f position, const std::vector<TextLine>& texts, float maxX = -1, bool centered = false);
+	Text(sf::Vector2f position, const std::vector<TextLine>& texts, float maxX = -1, bool centered = true);
 
 protected:
 	std::vector<sf::Text> _texts;

@@ -74,9 +74,11 @@ namespace Game
 			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
 
 			_game.YourTurn = startGamePacket.YourTurn;
-			_game.ReadyToStart = true;
+		}
 
-			SetState(GameState::GAME);
+		if (_gui != nullptr)
+		{
+			_gui->OnPacketReceived(packet);
 		}
 	}
 

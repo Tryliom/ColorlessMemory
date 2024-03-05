@@ -10,9 +10,7 @@ GameGui::GameGui()
 		{
 			TextLine({CustomText{.Text = "Game", .Size = 50}}),
 			TextLine({CustomText{.Text = "In construction", .Size = 40}}),
-		},
-		-1,
-		true
+		}
 	);
 
 	_texts.emplace_back(title);
