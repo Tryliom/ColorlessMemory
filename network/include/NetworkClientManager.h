@@ -21,4 +21,6 @@ public:
 	void StartThreads(Client& client);
 
 	Packet* PopPacket();
+
+	void Stop() { _running = false; }
 };

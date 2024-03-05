@@ -153,6 +153,9 @@ namespace Game
 			Render();
 		}
 
+		_client.socket->disconnect();
+		_networkClientManager.Stop();
+
 		return EXIT_SUCCESS;
 	}
 
