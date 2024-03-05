@@ -14,6 +14,17 @@ struct Client
 	std::queue<Packet*> packetsToBeSent = std::queue<Packet*>();
 	mutable std::shared_mutex mutex_;
 
+	~Client()
+	{
+		delete socket;
+
+		while (!packetsToBeSent.empty())
+		{
+			delete packetsToBeSent.front();
+			packetsToBeSent.pop();
+		}
+	}
+
 	void SendPacket(Packet* packet)
 	{
 		std::unique_lock lock(mutex_);

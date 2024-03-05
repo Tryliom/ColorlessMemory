@@ -9,7 +9,7 @@ enum class PacketType
 	JoinLobby,
 	LeaveLobby,
 	StartGame,
-	Invalid
+	Invalid // Always last
 };
 
 // Packet attributes always need to be initialized to default values
@@ -44,7 +44,9 @@ struct StartGamePacket final : Packet
 	StartGamePacket() : Packet(PacketType::StartGame) {}
 	explicit StartGamePacket(bool yourTurn) : Packet(PacketType::StartGame), YourTurn(yourTurn) {}
 
-	//TODO: Remove this and pass informations with UpdateGamePacket which contains the turn, score, etc
+	//TODO: Use TurnPacket to tell the client that it's their turn
+	//TODO: Use CardPacket to tell the client which icon is on the card selected and where it is
+	//TODO: When last cardPacket sent, the server remove the lobby and game ends, everything is handle by the client
 	bool YourTurn{};
 };
 

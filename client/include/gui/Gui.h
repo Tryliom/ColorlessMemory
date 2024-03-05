@@ -22,4 +22,5 @@ protected:
 public:
 	void Update(sf::Time elapsed);
 	void CheckInputs(sf::Event event);
+	//TODO: Add OnPacketReceived
 };

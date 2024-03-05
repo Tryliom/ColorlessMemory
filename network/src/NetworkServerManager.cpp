@@ -7,37 +7,42 @@
 
 NetworkServerManager::~NetworkServerManager()
 {
-	running = false;
-	listener.close();
+	Running = false;
+	_listener.close();
 }
 
 bool NetworkServerManager::Bind(unsigned short port)
 {
-	return listener.listen(port) == sf::Socket::Done;
+	return _listener.listen(port) == sf::Socket::Done;
 }
 
-void NetworkServerManager::ListenToClientPackets(std::function<bool(sf::TcpSocket*, Packet*)> onMessageReceived)
+void NetworkServerManager::OnPacketReceived(std::function<void(sf::TcpSocket*, Packet*)> onPacketReceived)
 {
-	this->onClientMessageReceived = std::move(onMessageReceived);
+	this->_onPacketReceived = std::move(onPacketReceived);
+}
+
+void NetworkServerManager::OnDisconnect(std::function<void(sf::TcpSocket*)> onDisconnect)
+{
+	this->_onDisconnect = std::move(onDisconnect);
 }
 
 void NetworkServerManager::StartThreads()
 {
 	std::thread clientAcceptor = std::thread([this]() {
-		while (running)
+		while (Running)
 		{
 			// Accept a new connection
-			std::scoped_lock lock(mutex);
+			std::scoped_lock lock(_mutex);
 			auto* socket = new sf::TcpSocket();
 
-			if (listener.accept(*socket) != sf::Socket::Done)
+			if (_listener.accept(*socket) != sf::Socket::Done)
 			{
 				LOG_ERROR("Could not accept connection");
 			}
 			else
 			{
-				auto index = clients.AddClient(socket);
-				auto& client = *clients[index];
+				auto index = _clients.AddClient(socket);
+				auto& client = *_clients[index];
 
 				LOG("Client connected: " << client.socket->getRemoteAddress() << ':' << client.socket->getRemotePort());
 
@@ -50,11 +55,11 @@ void NetworkServerManager::StartThreads()
 	clientAcceptor.detach();
 
 	std::thread packetSender = std::thread([&] {
-		while (running)
+		while (Running)
 		{
-			if (clients.isEmpty()) continue;
+			if (_clients.isEmpty()) continue;
 
-			clients.CheckPacketToBeSent();
+			_clients.CheckPacketToBeSent();
 		}
 	});
 	packetSender.detach();
@@ -62,27 +67,19 @@ void NetworkServerManager::StartThreads()
 
 void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 {
-	bool receiving = true;
-	auto* client = clients[clientIndex];
+	auto* client = _clients[clientIndex];
 	sf::TcpSocket* socket = client->socket;
-	while (receiving)
+	while (true)
 	{
 		// Receive a message from the client
 		Packet* packet = PacketManager::ReceivePacket(*socket);
 
-		if (packet->type == PacketType::Invalid)
-		{
-			LOG_ERROR("Could not receive packet from client");
-			break;
-		}
-
-		if (onClientMessageReceived)
-		{
-			receiving = onClientMessageReceived(socket, packet);
-		}
+		if (packet->type == PacketType::Invalid) break;
+		if (_onPacketReceived) _onPacketReceived(socket, packet);
 
 		delete packet;
 	}
 
-	clients.RemoveClient(clientIndex);
+	if (_onDisconnect) _onDisconnect(socket);
+	_clients.RemoveClient(clientIndex);
 }

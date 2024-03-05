@@ -13,6 +13,5 @@ struct LobbyData
 namespace GameServer
 {
 	void Initialize();
-
 	void StartLoop();
 };

@@ -30,8 +30,8 @@ namespace Game
 	LobbyData _lobby;
 	GameData _game;
 
-	bool onPacketReceived(const Packet& packet);
-	void setBackground(const sf::Texture& texture);
+	void OnPacketReceived(const Packet& packet);
+	void SetBackground(const sf::Texture& texture);
 
 	void Initialize()
 	{
@@ -42,7 +42,7 @@ namespace Game
 		Game::HEIGHT = static_cast<float>(_window.getSize().y);
 		Game::WIDTH = static_cast<float>(_window.getSize().x);
 
-		setBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
+		SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
 		SetState(GameState::MAIN_MENU);
 
 		// Network
@@ -54,10 +54,12 @@ namespace Game
 			_window.close();
 		}
 
+		//TODO: Get the name of the user with the filesystem and send it to the server
+
 		_networkClientManager.StartThreads(_client);
 	}
 
-	bool onPacketReceived(const Packet& packet)
+	void OnPacketReceived(const Packet& packet)
 	{
 		if (packet.type == PacketType::JoinLobby)
 		{
@@ -76,11 +78,9 @@ namespace Game
 
 			SetState(GameState::GAME);
 		}
-
-		return true;
 	}
 
-	void update(sf::Time elapsed)
+	void Update(sf::Time elapsed)
 	{
 		if (_gui != nullptr)
 		{
@@ -89,12 +89,18 @@ namespace Game
 
 		while (Packet* packet = _networkClientManager.PopPacket())
 		{
-			onPacketReceived(*packet);
-			delete packet;
+			OnPacketReceived(*packet);
+
+			auto packetTypeValue = static_cast<int>(packet->type);
+
+			if (packetTypeValue >= 0 && packetTypeValue <= static_cast<int>(PacketType::Invalid))
+			{
+				delete packet;
+			}
 		}
 	}
 
-	void checkInputs(sf::Event event)
+	void CheckInputs(sf::Event event)
 	{
 		if (event.type == sf::Event::Closed)
 		{
@@ -108,7 +114,7 @@ namespace Game
 		}
 	}
 
-	void render()
+	void Render()
 	{
 		_window.clear();
 
@@ -123,7 +129,7 @@ namespace Game
 		_window.display();
 	}
 
-	void setBackground(const sf::Texture& texture)
+	void SetBackground(const sf::Texture& texture)
 	{
 		_background.setTexture(&texture);
 		_background.setSize(sf::Vector2f(texture.getSize()));
@@ -140,11 +146,11 @@ namespace Game
 
 			while (_window.pollEvent(event))
 			{
-				checkInputs(event);
+				CheckInputs(event);
 			}
 
-			update(clock.restart());
-			render();
+			Update(clock.restart());
+			Render();
 		}
 
 		return EXIT_SUCCESS;
@@ -184,7 +190,7 @@ namespace Game
 		_window.close();
 	}
 
-	void Game::SendPacket(Packet* packet)
+	void SendPacket(Packet* packet)
 	{
 		_client.SendPacket(packet);
 	}

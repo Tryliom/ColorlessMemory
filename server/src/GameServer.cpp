@@ -12,9 +12,10 @@ namespace GameServer
 	NetworkServerManager server;
 	std::vector<LobbyData> lobbies;
 
-	bool onReceivePacket(sf::TcpSocket* socket, Packet* packet);
-	void joinLobby(sf::TcpSocket* socket);
-	void removeFromLobby(sf::TcpSocket* socket);
+	void OnReceivePacket(sf::TcpSocket* socket, Packet* packet);
+	void OnDisconnect(sf::TcpSocket* socket);
+	void JoinLobby(sf::TcpSocket* socket);
+	void RemoveFromLobby(sf::TcpSocket* socket);
 
 	void Initialize()
 	{
@@ -22,33 +23,33 @@ namespace GameServer
 		if (!server.Bind(PORT))
 		{
 			LOG_ERROR("Could not bind listener to port");
-			server.running = false;
+			server.Running = false;
 			return;
 		}
 
 		LOG("Server is listening to port " << PORT);
 
-		//TODO: Add a function to handle disconnects
-		server.ListenToClientPackets(onReceivePacket);
+		server.OnPacketReceived(OnReceivePacket);
+		server.OnDisconnect(OnDisconnect);
 		server.StartThreads();
 	}
 
 	void StartLoop()
 	{
-		while (server.running) {}
+		while (server.Running) {}
 	}
 
-	bool onReceivePacket(sf::TcpSocket* socket, Packet* packet)
+	void OnReceivePacket(sf::TcpSocket* socket, Packet* packet)
 	{
 		if (packet->type == PacketType::JoinLobby)
 		{
 			LOG("Player " << ClientToString(socket) << " joined the lobby");
-			joinLobby(socket);
+			JoinLobby(socket);
 		}
 		else if (packet->type == PacketType::LeaveLobby)
 		{
 			LOG("Player " << ClientToString(socket) << " left the lobby");
-			removeFromLobby(socket);
+			RemoveFromLobby(socket);
 		}
 		else if (packet->type == PacketType::StartGame)
 		{
@@ -60,15 +61,19 @@ namespace GameServer
 					// Send a message to the players that the game is starting
 					PacketManager::SendPacket(*lobby.player1, new StartGamePacket(true));
 					PacketManager::SendPacket(*lobby.player2, new StartGamePacket(false));
-					return true;
+					break;
 				}
 			}
 		}
-
-		return true;
 	}
 
-	void joinLobby(sf::TcpSocket* socket)
+	void OnDisconnect(sf::TcpSocket* socket)
+	{
+		LOG("Player " << ClientToString(socket) << " disconnected");
+		RemoveFromLobby(socket);
+	}
+
+	void JoinLobby(sf::TcpSocket* socket)
 	{
 		// Check if there is a lobby with only one player
 		for (auto& lobby : lobbies)
@@ -94,7 +99,7 @@ namespace GameServer
 		PacketManager::SendPacket(*socket, new JoinLobbyPacket(true, true));
 	}
 
-	void removeFromLobby(sf::TcpSocket* socket)
+	void RemoveFromLobby(sf::TcpSocket* socket)
 	{
 		// Remove the player from the lobby
 		for (auto& lobby : lobbies)
@@ -105,8 +110,9 @@ namespace GameServer
 
 				if (lobby.player2 != nullptr)
 				{
-					joinLobby(lobby.player2);
+					auto* player = lobby.player2;
 					lobby.player2 = nullptr;
+					JoinLobby(player);
 				}
 			}
 			else if (lobby.player2 == socket)
@@ -115,8 +121,9 @@ namespace GameServer
 
 				if (lobby.player1 != nullptr)
 				{
-					joinLobby(lobby.player1);
+					auto* player = lobby.player1;
 					lobby.player1 = nullptr;
+					JoinLobby(player);
 				}
 			}
 		}
