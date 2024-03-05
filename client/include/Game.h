@@ -14,10 +14,18 @@ enum class GameState
 	GAME
 };
 
+struct PlayerData
+{
+	std::string Name;
+	std::size_t IconIndex = 20;
+};
+
 struct LobbyData
 {
 	bool IsHost{};
 	bool WaitingForOpponent = true;
+	PlayerData Player1;
+	PlayerData Player2;
 };
 
 struct CardData
@@ -62,6 +70,7 @@ namespace Game
 
 	void SendPacket(Packet* packet);
 
+	PlayerData& GetPlayer();
 	LobbyData& GetLobby();
 	GameData& GetGame();
 }

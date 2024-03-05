@@ -19,6 +19,10 @@ protected:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	virtual void OnUpdate(sf::Time elapsed) {}
+	/**
+	 * @brief Draw additional elements after background and before buttons and texts
+	 */
+	virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const {}
 
 public:
 	void Update(sf::Time elapsed);

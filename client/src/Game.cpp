@@ -9,8 +9,9 @@
 #include "gui/guis/LobbyGui.h"
 #include "gui/guis/GameGui.h"
 
-
 #include <SFML/Graphics.hpp>
+
+#include <cstdlib>
 
 namespace Game
 {
@@ -27,6 +28,7 @@ namespace Game
 	sf::RectangleShape _background;
 
 	// Game data
+	PlayerData _player;
 	LobbyData _lobby;
 	GameData _game;
 
@@ -54,19 +56,28 @@ namespace Game
 			_window.close();
 		}
 
-		//TODO: Get the name of the user with the filesystem and send it to the server
+		// Get player name
+		std::string username = std::getenv("USERNAME") ? std::getenv("USERNAME") : "default";
+		if (!username.empty()) {
+			username[0] = std::toupper(username[0]);
+		}
+		_player.Name = username;
 
 		_networkClientManager.StartThreads(_client);
 	}
 
 	void OnPacketReceived(const Packet& packet)
 	{
-		if (packet.type == PacketType::JoinLobby)
+		if (packet.type == PacketType::LobbyInformation)
 		{
-			auto& joinLobbyPacket = dynamic_cast<const JoinLobbyPacket&>(packet);
+			auto& joinLobbyPacket = dynamic_cast<const LobbyInformationPacket&>(packet);
 
 			_lobby.IsHost = joinLobbyPacket.IsHost;
 			_lobby.WaitingForOpponent = joinLobbyPacket.WaitingForOpponent;
+			_lobby.Player1.Name = joinLobbyPacket.Player1Name;
+			_lobby.Player1.IconIndex = joinLobbyPacket.Player1Icon;
+			_lobby.Player2.Name = joinLobbyPacket.Player2Name;
+			_lobby.Player2.IconIndex = joinLobbyPacket.Player2Icon;
 			_game.Reset();
 		}
 		else if (packet.type == PacketType::StartGame)
@@ -179,7 +190,7 @@ namespace Game
 			_gui = new LobbyGui();
 			_lobby.IsHost = true;
 			_lobby.WaitingForOpponent = true;
-			SendPacket(new JoinLobbyPacket());
+			SendPacket(new JoinLobbyPacket(_player.Name, _player.IconIndex));
 		}
 
 		if (state == GameState::GAME)
@@ -208,5 +219,10 @@ namespace Game
 	GameData& GetGame()
 	{
 		return _game;
+	}
+
+	PlayerData& GetPlayer()
+	{
+		return _player;
 	}
 }

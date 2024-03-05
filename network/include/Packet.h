@@ -6,6 +6,7 @@
 
 enum class PacketType
 {
+	LobbyInformation,
 	JoinLobby,
 	LeaveLobby,
 	StartGame,
@@ -25,13 +26,28 @@ struct Packet
 	static Packet* FromType(PacketType type);
 };
 
-struct JoinLobbyPacket final : Packet
+//TODO: Rename to LobbyInformationPacket and add a JoinLobbyPacket for client to send his player information
+struct LobbyInformationPacket final : Packet
 {
-	JoinLobbyPacket() : Packet(PacketType::JoinLobby) {}
-	JoinLobbyPacket(bool isHost, bool waitingForOpponent) : Packet(PacketType::JoinLobby), IsHost(isHost), WaitingForOpponent(waitingForOpponent) {}
+	LobbyInformationPacket() : Packet(PacketType::LobbyInformation) {}
+	LobbyInformationPacket(bool isHost, bool waitingForOpponent, std::string player1Name, std::string player2Name, std::size_t player1Icon, std::size_t player2Icon)
+		: Packet(PacketType::LobbyInformation), IsHost(isHost), WaitingForOpponent(waitingForOpponent), Player1Name(std::move(player1Name)), Player2Name(std::move(player2Name)), Player1Icon(player1Icon), Player2Icon(player2Icon) {}
 
 	bool IsHost{};
 	bool WaitingForOpponent{};
+	std::string Player1Name{};
+	std::string Player2Name{};
+	std::size_t Player1Icon{};
+	std::size_t Player2Icon{};
+};
+
+struct JoinLobbyPacket final : Packet
+{
+	JoinLobbyPacket() : Packet(PacketType::JoinLobby) {}
+	explicit JoinLobbyPacket(std::string name, std::size_t iconIndex) : Packet(PacketType::JoinLobby), Name(std::move(name)), IconIndex(iconIndex) {}
+
+	std::string Name;
+	std::size_t IconIndex{};
 };
 
 struct LeaveLobbyPacket final : Packet
@@ -57,6 +73,9 @@ struct InvalidPacket final : Packet
 
 sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType);
 sf::Packet& operator >>(sf::Packet& packet, Packet& packetType);
+
+sf::Packet& operator <<(sf::Packet& packet, const LobbyInformationPacket& joinLobbyPacket);
+sf::Packet& operator >>(sf::Packet& packet, LobbyInformationPacket& joinLobbyPacket);
 
 sf::Packet& operator <<(sf::Packet& packet, const JoinLobbyPacket& joinLobbyPacket);
 sf::Packet& operator >>(sf::Packet& packet, JoinLobbyPacket& joinLobbyPacket);
