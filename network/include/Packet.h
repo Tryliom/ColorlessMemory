@@ -26,7 +26,6 @@ struct Packet
 	static Packet* FromType(PacketType type);
 };
 
-//TODO: Rename to LobbyInformationPacket and add a JoinLobbyPacket for client to send his player information
 struct LobbyInformationPacket final : Packet
 {
 	LobbyInformationPacket() : Packet(PacketType::LobbyInformation) {}
