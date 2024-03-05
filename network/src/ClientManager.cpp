@@ -1,7 +1,6 @@
 #include "ClientManager.h"
 
 #include "PacketManager.h"
-#include "Logger.h"
 
 #include <thread>
 

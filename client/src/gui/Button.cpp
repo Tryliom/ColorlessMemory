@@ -1,4 +1,5 @@
 #include "gui/Button.h"
+
 #include "Game.h"
 
 #include <SFML/Graphics.hpp>

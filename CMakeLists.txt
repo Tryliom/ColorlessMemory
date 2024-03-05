@@ -44,19 +44,51 @@ add_custom_target(
         DEPENDS ${Data_OUTPUT_FILES}
 )
 
-file(GLOB_RECURSE COMMON_FILES src/*.cpp include/*.h)
-add_library(Common STATIC ${COMMON_FILES})
-target_include_directories(Common PUBLIC include/)
-target_include_directories(Common PUBLIC src/)
-target_link_libraries(Common PUBLIC sfml-graphics sfml-audio sfml-window sfml-system sfml-network)
+# Client
+file(GLOB_RECURSE CLIENT_FILES client/src/*.cpp client/include/*.h)
+add_library(Client STATIC ${CLIENT_FILES})
+target_include_directories(Client PUBLIC client/include/)
+target_include_directories(Client PUBLIC client/src/)
+target_link_libraries(Client PUBLIC sfml-graphics sfml-window sfml-system sfml-network)
 
 if(MSVC)
-    target_link_libraries(Common PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
+    target_link_libraries(Client PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
 else()
-    target_link_libraries(Common PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
+    target_link_libraries(Client PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
 endif()
 
-target_link_libraries(client PRIVATE Common)
-target_link_libraries(server PRIVATE Common)
+# Server
+file(GLOB_RECURSE SERVER_FILES server/src/*.cpp server/include/*.h)
+add_library(Server STATIC ${SERVER_FILES})
+target_include_directories(Server PUBLIC server/include/)
+target_include_directories(Server PUBLIC server/src/)
+target_link_libraries(Server PUBLIC sfml-graphics sfml-window sfml-system sfml-network)
+
+if(MSVC)
+    target_link_libraries(Server PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
+else()
+    target_link_libraries(Server PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
+endif()
+
+# Common
+file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
+add_library(Common STATIC ${COMMON_FILES})
+target_include_directories(Common PUBLIC common/include/)
+target_include_directories(Common PUBLIC common/src/)
+
+# Network
+file(GLOB_RECURSE NETWORK_FILES network/include/*.h network/src/*.cpp)
+add_library(Network STATIC ${NETWORK_FILES})
+target_include_directories(Network PUBLIC network/include/)
+target_include_directories(Network PUBLIC network/src/)
+target_link_libraries(Network PUBLIC sfml-system sfml-network)
+
+# Linking
+target_link_libraries(Network PUBLIC Common)
+target_link_libraries(Client PUBLIC Network)
+target_link_libraries(Server PUBLIC Network)
+
+target_link_libraries(client PRIVATE Client)
+target_link_libraries(server PRIVATE Server)
 
 add_dependencies(client data_target)

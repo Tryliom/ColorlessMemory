@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Packet.h"
+
 #include <SFML/Graphics.hpp>
 
 #include <array>
-#include "Packet.h"
 
 enum class GameState
 {

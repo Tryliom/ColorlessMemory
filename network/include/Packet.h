@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Network.hpp>
+
 #include <utility>
 
 enum class PacketType
