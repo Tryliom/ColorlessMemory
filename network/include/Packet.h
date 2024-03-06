@@ -13,6 +13,8 @@ enum class PacketType
 	JoinLobby,
 	LeaveLobby,
 	StartGame,
+	Turn,
+	CardInformation,
 	Invalid // Always last
 };
 
@@ -71,12 +73,27 @@ struct LeaveLobbyPacket final : Packet
 struct StartGamePacket final : Packet
 {
 	StartGamePacket() : Packet(PacketType::StartGame) {}
-	explicit StartGamePacket(bool yourTurn) : Packet(PacketType::StartGame), YourTurn(yourTurn) {}
+	explicit StartGamePacket(DeckType deckType, bool yourTurn) : Packet(PacketType::StartGame), DeckType(deckType), YourTurn(yourTurn) {}
 
-	//TODO: Use TurnPacket to tell the client that it's their turn
-	//TODO: Use CardPacket to tell the client which icon is on the card selected and where it is
-	//TODO: When last cardPacket sent, the server remove the lobby and game ends, everything is handle by the client
+	DeckType DeckType{};
 	bool YourTurn{};
+};
+
+struct TurnPacket final : Packet
+{
+	TurnPacket() : Packet(PacketType::Turn) {}
+	explicit TurnPacket(bool yourTurn) : Packet(PacketType::Turn), YourTurn(yourTurn) {}
+
+	bool YourTurn{};
+};
+
+struct CardInformationPacket final : Packet
+{
+	CardInformationPacket() : Packet(PacketType::CardInformation) {}
+	explicit CardInformationPacket(std::size_t cardIndex, int iconIndex) : Packet(PacketType::CardInformation), CardIndex(cardIndex), IconIndex(iconIndex) {}
+
+	int CardIndex{};
+	std::size_t IconIndex{};
 };
 
 struct InvalidPacket final : Packet

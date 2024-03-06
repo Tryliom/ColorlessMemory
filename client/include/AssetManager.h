@@ -24,6 +24,6 @@ namespace AssetManager
 
 	sf::Font& GetMainFont();
 	sf::Texture& GetTexture(TextureType type);
-	sf::Texture& GetCardTexture(CardType type, bool isFlipped = false);
+	sf::Texture& GetCardTexture(CardType type, bool isRevealed = false);
 	sf::Texture& GetCardIcon(std::size_t index);
 }

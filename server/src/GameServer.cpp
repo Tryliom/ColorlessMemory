@@ -1,16 +1,57 @@
 #include "GameServer.h"
 
 #include "Logger.h"
+#include "Random.h"
 
 std::string ClientToString(sf::TcpSocket* client)
 {
 	return client->getRemoteAddress().toString() + ':' + std::to_string(client->getRemotePort());
 }
 
+GameData::GameData(const LobbyData& lobbyData)
+{
+	player1 = lobbyData.player1;
+	player2 = lobbyData.player2;
+
+	// Create deck
+	std::size_t cardCount = 0;
+	switch (lobbyData.deckType)
+	{
+	case DeckType::Deck3x2:
+		cardCount = 6;
+		break;
+	case DeckType::Deck7x2:
+		cardCount = 14;
+		break;
+	case DeckType::Deck6x5:
+		cardCount = 30;
+		break;
+	case DeckType::Deck7x6:
+		cardCount = 42;
+		break;
+	case DeckType::Deck10x5:
+		cardCount = 50;
+		break;
+	}
+
+	const auto& maxCard = cardCount / 2;
+	for (std::size_t i = 0; i < maxCard; i++)
+	{
+		cards.push_back(i);
+		cards.push_back(i);
+	}
+
+	Random::Shuffle(cards);
+
+	turn = Random::Range(0, 1);
+	selectedCards = { -1, -1 };
+}
+
 namespace GameServer
 {
 	NetworkServerManager server;
 	std::vector<LobbyData> lobbies;
+	std::vector<GameData> games;
 
 	void OnReceivePacket(sf::TcpSocket* socket, Packet* packet);
 	void OnDisconnect(sf::TcpSocket* socket);
@@ -71,11 +112,78 @@ namespace GameServer
 			{
 				if (lobby.player1 == socket || lobby.player2 == socket)
 				{
+					// Create a new game
+					games.emplace_back(lobby);
+					const auto& game = games.back();
+
 					// Send a message to the players that the game is starting
-					PacketManager::SendPacket(*lobby.player1, new StartGamePacket(true));
-					PacketManager::SendPacket(*lobby.player2, new StartGamePacket(false));
+					PacketManager::SendPacket(*lobby.player1, new StartGamePacket(lobby.deckType, game.turn == 0));
+					PacketManager::SendPacket(*lobby.player2, new StartGamePacket(lobby.deckType, game.turn == 1));
+
+					// Remove the lobby
+					lobby.Reset();
 					break;
 				}
+			}
+		}
+		else if (packet->type == PacketType::CardInformation)
+		{
+			const auto* cardInformationPacket = dynamic_cast<CardInformationPacket*>(packet);
+			auto gameToDelete = -1;
+
+			// Find the game with the player
+			for (auto i = 0; i < games.size(); i++)
+			{
+				auto& game = games[i];
+
+				if (game.player1 != socket && game.player2 != socket) continue;
+
+				auto playerTurn = game.turn;
+				auto requestPlayer = game.player1 == socket ? 0 : 1;
+
+				if (playerTurn != requestPlayer) return;
+				if (game.HasSelectedTwoCards()) return;
+				if (game.selectedCards[0] == cardInformationPacket->CardIndex) return;
+
+				game.SelectCard(cardInformationPacket->CardIndex);
+
+				const int iconIndex = static_cast<int>(game.cards[cardInformationPacket->CardIndex]);
+
+				PacketManager::SendPacket(*game.player1, new CardInformationPacket(cardInformationPacket->CardIndex, iconIndex));
+				PacketManager::SendPacket(*game.player2, new CardInformationPacket(cardInformationPacket->CardIndex, iconIndex));
+
+				if (game.HasSelectedTwoCards())
+				{
+					if (game.cards[game.selectedCards[0]] != game.cards[game.selectedCards[1]])
+					{
+						game.turn = 1 - game.turn;
+					}
+					else
+					{
+						game.totalScore++;
+					}
+
+					game.UnselectCards();
+
+					if (game.IsGameOver())
+					{
+						// Remove game
+						gameToDelete = i;
+					}
+					else
+					{
+						// Send a message to the players whose turn it is
+						PacketManager::SendPacket(*game.player1, new TurnPacket(playerTurn == 0));
+						PacketManager::SendPacket(*game.player2, new TurnPacket(playerTurn == 1));
+					}
+				}
+
+				break;
+			}
+
+			if (gameToDelete != -1)
+			{
+				games.erase(games.begin() + gameToDelete);
 			}
 		}
 	}

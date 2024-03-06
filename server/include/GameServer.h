@@ -5,6 +5,8 @@
 
 #include <SFML/Network.hpp>
 
+#include <array>
+
 struct LobbyData
 {
 	sf::TcpSocket* player1;
@@ -30,6 +32,49 @@ struct LobbyData
 		player1Icon = 0;
 		player2Icon = 0;
 		deckType = DeckType::Deck3x2;
+	}
+};
+
+struct GameData
+{
+	sf::TcpSocket* player1{};
+	sf::TcpSocket* player2{};
+
+	std::vector<std::size_t> cards;
+
+	std::size_t turn{};
+	std::array<int, 2> selectedCards{};
+
+	std::size_t totalScore {};
+
+	explicit GameData(const LobbyData& lobbyData);
+
+	[[nodiscard]] bool HasSelectedTwoCards() const
+	{
+		return selectedCards[0] != -1 && selectedCards[1] != -1;
+	}
+
+	void SelectCard(int index)
+	{
+		if (selectedCards[0] == -1)
+		{
+			selectedCards[0] = index;
+		}
+		else if (selectedCards[1] == -1)
+		{
+			selectedCards[1] = index;
+		}
+	}
+
+	void UnselectCards()
+	{
+		selectedCards[0] = -1;
+		selectedCards[1] = -1;
+	}
+
+	[[nodiscard]] bool IsGameOver() const
+	{
+		return totalScore == cards.size() / 2;
 	}
 };
 

@@ -1,8 +1,10 @@
 #include "Random.h"
 
+#include <random>
+
 namespace Random
 {
-	[[nodiscard]] inline float Range(float min, float max) noexcept
+	[[nodiscard]] float Range(float min, float max) noexcept
 	{
 		if (min > max)
 		{
@@ -18,7 +20,7 @@ namespace Random
 		return dis(gen);
 	}
 
-	[[nodiscard]] inline int Range(int min, int max) noexcept
+	[[nodiscard]] int Range(int min, int max) noexcept
 	{
 		if (min > max)
 		{

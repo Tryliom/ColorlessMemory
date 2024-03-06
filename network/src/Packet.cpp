@@ -9,6 +9,8 @@ Packet* Packet::FromType(PacketType type)
 	case PacketType::JoinLobby: return new JoinLobbyPacket();
 	case PacketType::LeaveLobby: return new LeaveLobbyPacket();
 	case PacketType::StartGame: return new StartGamePacket();
+	case PacketType::Turn: return new TurnPacket();
+	case PacketType::CardInformation: return new CardInformationPacket();
 	default: return new InvalidPacket();
 	}
 }
@@ -46,7 +48,19 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 	case PacketType::StartGame:
 	{
 		const auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packetType);
-		packet << startGamePacket.YourTurn;
+		packet << static_cast<sf::Uint8>(startGamePacket.DeckType) << startGamePacket.YourTurn;
+		break;
+	}
+	case PacketType::Turn:
+	{
+		const auto& turnPacket = dynamic_cast<const TurnPacket&>(packetType);
+		packet << turnPacket.YourTurn;
+		break;
+	}
+	case PacketType::CardInformation:
+	{
+		const auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packetType);
+		packet << cardInformationPacket.CardIndex << cardInformationPacket.IconIndex;
 		break;
 	}
 	default:
@@ -92,7 +106,21 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 	case PacketType::StartGame:
 	{
 		auto* startGamePacket = dynamic_cast<StartGamePacket*>(&packetType);
-		packet >> startGamePacket->YourTurn;
+		sf::Uint8 deckTypeUint;
+		packet >> deckTypeUint >> startGamePacket->YourTurn;
+		startGamePacket->DeckType = static_cast<DeckType>(deckTypeUint);
+		break;
+	}
+	case PacketType::Turn:
+	{
+		auto* turnPacket = dynamic_cast<TurnPacket*>(&packetType);
+		packet >> turnPacket->YourTurn;
+		break;
+	}
+	case PacketType::CardInformation:
+	{
+		auto* cardInformationPacket = dynamic_cast<CardInformationPacket*>(&packetType);
+		packet >> cardInformationPacket->CardIndex >> cardInformationPacket->IconIndex;
 		break;
 	}
 	default:
