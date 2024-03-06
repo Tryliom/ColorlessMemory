@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DeckType.h"
+
 #include <SFML/Network.hpp>
 
 #include <utility>
@@ -7,6 +9,7 @@
 enum class PacketType
 {
 	LobbyInformation,
+	ChangeDeck,
 	JoinLobby,
 	LeaveLobby,
 	StartGame,
@@ -29,8 +32,10 @@ struct Packet
 struct LobbyInformationPacket final : Packet
 {
 	LobbyInformationPacket() : Packet(PacketType::LobbyInformation) {}
-	LobbyInformationPacket(bool isHost, bool waitingForOpponent, std::string player1Name, std::string player2Name, std::size_t player1Icon, std::size_t player2Icon)
-		: Packet(PacketType::LobbyInformation), IsHost(isHost), WaitingForOpponent(waitingForOpponent), Player1Name(std::move(player1Name)), Player2Name(std::move(player2Name)), Player1Icon(player1Icon), Player2Icon(player2Icon) {}
+	LobbyInformationPacket(bool isHost, bool waitingForOpponent, std::string player1Name, std::string player2Name, std::size_t player1Icon,
+		std::size_t player2Icon, DeckType deckType)
+		: Packet(PacketType::LobbyInformation), IsHost(isHost), WaitingForOpponent(waitingForOpponent), Player1Name(std::move(player1Name)),
+		Player2Name(std::move(player2Name)), Player1Icon(player1Icon), Player2Icon(player2Icon), DeckType(deckType) {}
 
 	bool IsHost{};
 	bool WaitingForOpponent{};
@@ -38,6 +43,15 @@ struct LobbyInformationPacket final : Packet
 	std::string Player2Name{};
 	std::size_t Player1Icon{};
 	std::size_t Player2Icon{};
+	DeckType DeckType { DeckType::Deck3x2 };
+};
+
+struct ChangeDeckPacket final : Packet
+{
+	ChangeDeckPacket() : Packet(PacketType::ChangeDeck) {}
+	explicit ChangeDeckPacket(DeckType deckType) : Packet(PacketType::ChangeDeck), DeckType(deckType) {}
+
+	DeckType DeckType{};
 };
 
 struct JoinLobbyPacket final : Packet
@@ -75,6 +89,9 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType);
 
 sf::Packet& operator <<(sf::Packet& packet, const LobbyInformationPacket& joinLobbyPacket);
 sf::Packet& operator >>(sf::Packet& packet, LobbyInformationPacket& joinLobbyPacket);
+
+sf::Packet& operator <<(sf::Packet& packet, const ChangeDeckPacket& changeDeckPacket);
+sf::Packet& operator >>(sf::Packet& packet, ChangeDeckPacket& changeDeckPacket);
 
 sf::Packet& operator <<(sf::Packet& packet, const JoinLobbyPacket& joinLobbyPacket);
 sf::Packet& operator >>(sf::Packet& packet, JoinLobbyPacket& joinLobbyPacket);

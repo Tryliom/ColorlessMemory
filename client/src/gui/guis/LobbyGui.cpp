@@ -5,6 +5,25 @@
 #include "Packet.h"
 #include "AssetManager.h"
 
+std::string ToString(DeckType deckType)
+{
+	switch (deckType)
+	{
+	case DeckType::Deck3x2:
+		return "3x2";
+	case DeckType::Deck7x2:
+		return "7x2";
+	case DeckType::Deck6x5:
+		return "6x5";
+	case DeckType::Deck7x6:
+		return "7x6";
+	case DeckType::Deck10x5:
+		return "10x5";
+	}
+
+	return "Unknown";
+}
+
 LobbyGui::LobbyGui()
 {
 	// Create buttons
@@ -60,6 +79,7 @@ LobbyGui::LobbyGui()
 	_texts.emplace_back(title);
 	_texts.emplace_back(waiting);
 
+	// Create player icons
 	const auto& defaultIcon = &AssetManager::GetCardIcon(0);
 	const auto& player1Icon = &AssetManager::GetTexture(TextureType::PLAYER1_ICON_BACKGROUND);
 	const auto& player2Icon = &AssetManager::GetTexture(TextureType::PLAYER2_ICON_BACKGROUND);
@@ -112,6 +132,47 @@ LobbyGui::LobbyGui()
 		sf::Vector2f(0, 0), // This will be set in OnPacketReceived
 		{ TextLine({ CustomText{ .Text = "", .Size = 20 }}) }
 	));
+
+	// Create and place deck icons
+	const auto& deckIconSize = sf::Vector2f(210, 200);
+	const auto& decksWidth = _deckIcons.size() * deckIconSize.x;
+	const auto& startPosition = sf::Vector2f(Game::WIDTH / 2.f - decksWidth / 2.f, Game::HEIGHT / 2.f + 100.f);
+
+	for (std::size_t i = 0; i < _deckIcons.size(); i++)
+	{
+		const auto& position = startPosition + sf::Vector2f(i * deckIconSize.x, 0);
+		const auto deckType = static_cast<DeckType>(i);
+
+		_deckIcons[i].SetTexture(static_cast<CardType>(i));
+		_deckIcons[i].SetPosition(position + sf::Vector2f(deckIconSize.x / 2.f, -50));
+
+		auto button = Button(
+			position + deckIconSize / 2.f,
+			sf::Vector2f(180, 50),
+			true
+		);
+
+		button.SetText({
+			TextLine({ CustomText{ .Text = "Deck " + ToString(deckType), .Size = 20 }})
+		});
+
+		button.SetOnClick([deckType, this]()
+		{
+		  Game::GetLobby().DeckType = deckType;
+		  for (auto buttonIndex = 2; buttonIndex < _buttons.size(); ++buttonIndex)
+		  {
+			  _buttons[buttonIndex].Toggle(buttonIndex - 2 == static_cast<int>(deckType));
+		  }
+
+		  Game::SendPacket(new ChangeDeckPacket(deckType));
+		});
+
+		if (deckType == Game::GetLobby().DeckType) button.Toggle(true);
+
+		button.Disable(); // Disable all buttons by default
+
+		_buttons.emplace_back(button);
+	}
 }
 
 void LobbyGui::OnPacketReceived(const Packet& packet)
@@ -134,8 +195,26 @@ void LobbyGui::OnPacketReceived(const Packet& packet)
 		}
 		else
 		{
-			if (lobby.IsHost) _buttons[0].Enable();
-			else _buttons[0].Disable();
+			if (lobby.IsHost)
+			{
+				// Enable deck buttons
+				for (std::size_t i = 0; i < _deckIcons.size(); ++i)
+				{
+					_buttons[i + 2].Enable();
+				}
+
+				_buttons[0].Enable();
+			}
+			else
+			{
+				// Disable deck buttons
+				for (std::size_t i = 0; i < _deckIcons.size(); ++i)
+				{
+					_buttons[i + 2].Disable();
+				}
+
+				_buttons[0].Disable();
+			}
 			_texts[1] = Text(
 				sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT / 2.f),
 				{ TextLine({ CustomText{ .Text = "Ready to start !", .Size = 30 }}) }
@@ -182,5 +261,13 @@ void LobbyGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 		target.draw(_player2Background, states);
 		target.draw(_player2IconShadow, states);
 		target.draw(_player2Icon, states);
+	}
+
+	if (lobby.IsHost && !lobby.WaitingForOpponent)
+	{
+		for (const auto& deckIcon : _deckIcons)
+		{
+			deckIcon.Draw(target, states);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Packet.h"
+#include "DeckType.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -24,6 +25,7 @@ struct LobbyData
 {
 	bool IsHost{};
 	bool WaitingForOpponent = true;
+	DeckType DeckType = DeckType::Deck3x2;
 	PlayerData Player1;
 	PlayerData Player2;
 };

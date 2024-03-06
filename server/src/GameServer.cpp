@@ -47,6 +47,18 @@ namespace GameServer
 			LOG("Player " << ClientToString(socket) << " aka " << joinLobbyPacket->Name << " joined the lobby");
 			JoinLobby(socket, joinLobbyPacket->Name, joinLobbyPacket->IconIndex);
 		}
+		else if (packet->type == PacketType::ChangeDeck)
+		{
+			// Find the lobby with the player
+			for (auto& lobby : lobbies)
+			{
+				if (lobby.player1 == socket || lobby.player2 == socket)
+				{
+					lobby.deckType = dynamic_cast<ChangeDeckPacket*>(packet)->DeckType;
+					break;
+				}
+			}
+		}
 		else if (packet->type == PacketType::LeaveLobby)
 		{
 			LOG("Player " << ClientToString(socket) << " left the lobby");

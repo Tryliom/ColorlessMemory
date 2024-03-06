@@ -1,6 +1,9 @@
 #pragma once
 
 #include "gui/Gui.h"
+#include "DeckIcon.h"
+
+#include <array>
 
 class LobbyGui final : public Gui
 {
@@ -13,6 +16,8 @@ private:
 	sf::RectangleShape _player2Background;
 	sf::RectangleShape _player1BackgroundShadow;
 	sf::RectangleShape _player2BackgroundShadow;
+
+	std::array<DeckIcon, 5> _deckIcons;
 
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

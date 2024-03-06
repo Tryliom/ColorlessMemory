@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NetworkServerManager.h"
+#include "DeckType.h"
 
 #include <SFML/Network.hpp>
 
@@ -12,10 +13,12 @@ struct LobbyData
 	std::string player2Name;
 	std::size_t player1Icon;
 	std::size_t player2Icon;
+	DeckType deckType;
 
 	[[nodiscard]] LobbyInformationPacket* ToPacket(bool isHost) const
 	{
-		return new LobbyInformationPacket(isHost, player1 == nullptr || player2 == nullptr, player1Name, player2Name, player1Icon, player2Icon);
+		return new LobbyInformationPacket(isHost, player1 == nullptr || player2 == nullptr, player1Name, player2Name,
+			player1Icon, player2Icon, deckType);
 	}
 
 	void Reset()
@@ -26,6 +29,7 @@ struct LobbyData
 		player2Name.clear();
 		player1Icon = 0;
 		player2Icon = 0;
+		deckType = DeckType::Deck3x2;
 	}
 };
 

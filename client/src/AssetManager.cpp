@@ -18,10 +18,9 @@ namespace AssetManager
 
 		mainFont.loadFromFile("data/font/Retro Gaming.ttf");
 
-		for (auto i = 0; i < static_cast<int>(CardType::END); i++)
+		for (auto i = 0; i < static_cast<int>(CardType::END) * 2; i++)
 		{
-			auto str = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-			cardTextures[i].loadFromFile("data/textures/cards/" + str + ".png");
+			cardTextures[i].loadFromFile("data/textures/cards/0" + std::to_string(i) + ".png");
 		}
 
 		for (auto i = 0; i < CARD_ICON_COUNT; i++)
