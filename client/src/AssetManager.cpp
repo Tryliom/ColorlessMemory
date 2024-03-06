@@ -6,7 +6,7 @@ namespace AssetManager
 {
 	static std::array<sf::Texture, static_cast<int>(TextureType::END)> textures;
 	static sf::Font mainFont;
-	static std::array<sf::Texture, static_cast<int>(CardType::END) * 2> cardTextures;
+	static std::array<sf::Texture, 10> cardTextures;
 	static std::array<sf::Texture, CARD_ICON_COUNT> cardIcons;
 
 	void Initialize()
@@ -18,7 +18,7 @@ namespace AssetManager
 
 		mainFont.loadFromFile("data/font/Retro Gaming.ttf");
 
-		for (auto i = 0; i < static_cast<int>(CardType::END) * 2; i++)
+		for (auto i = 0; i < 10; i++)
 		{
 			cardTextures[i].loadFromFile("data/textures/cards/0" + std::to_string(i) + ".png");
 		}
@@ -40,7 +40,7 @@ namespace AssetManager
 		return textures[static_cast<int>(type)];
 	}
 
-	sf::Texture& GetCardTexture(const CardType type, const bool isRevealed)
+	sf::Texture& GetCardTexture(const DeckType type, const bool isRevealed)
 	{
 		return cardTextures[static_cast<int>(type) * 2 + (isRevealed ? 1 : 0)];
 	}

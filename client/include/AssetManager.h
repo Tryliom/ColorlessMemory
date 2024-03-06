@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DeckType.h"
+
 #include <SFML/Graphics.hpp>
 
 enum class TextureType
@@ -11,11 +13,6 @@ enum class TextureType
 	END
 };
 
-enum class CardType
-{
-	Common, Rare, Epic, Legendary, Unique, END
-};
-
 constexpr std::size_t CARD_ICON_COUNT = 25;
 
 namespace AssetManager
@@ -24,6 +21,6 @@ namespace AssetManager
 
 	sf::Font& GetMainFont();
 	sf::Texture& GetTexture(TextureType type);
-	sf::Texture& GetCardTexture(CardType type, bool isRevealed = false);
+	sf::Texture& GetCardTexture(DeckType type, bool isRevealed = false);
 	sf::Texture& GetCardIcon(std::size_t index);
 }

@@ -2,20 +2,15 @@
 
 #include "gui/Gui.h"
 #include "DeckIcon.h"
+#include "PlayerUi.h"
 
 #include <array>
 
 class LobbyGui final : public Gui
 {
 private:
-	sf::RectangleShape _player1Icon;
-	sf::RectangleShape _player2Icon;
-	sf::RectangleShape _player1IconShadow;
-	sf::RectangleShape _player2IconShadow;
-	sf::RectangleShape _player1Background;
-	sf::RectangleShape _player2Background;
-	sf::RectangleShape _player1BackgroundShadow;
-	sf::RectangleShape _player2BackgroundShadow;
+	PlayerUi _player1;
+	PlayerUi _player2;
 
 	std::array<DeckIcon, 5> _deckIcons;
 

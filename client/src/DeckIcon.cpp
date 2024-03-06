@@ -1,8 +1,8 @@
 #include "DeckIcon.h"
 
-void DeckIcon::SetTexture(CardType cardType)
+void DeckIcon::SetTexture(DeckType deckType)
 {
-	const auto& card = &AssetManager::GetCardTexture(cardType, false);
+	const auto& card = &AssetManager::GetCardTexture(deckType, false);
 	const auto& cardSize = card->getSize();
 	const auto& cardSizeF = sf::Vector2f(cardSize.x, cardSize.y);
 	const auto& scale = 0.3f;

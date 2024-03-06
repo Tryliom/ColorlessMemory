@@ -30,16 +30,9 @@ struct LobbyData
 	PlayerData Player2;
 };
 
-struct CardData
-{
-	// If -1, then it's not known
-	int IconIndex = -1;
-	bool Flipped = false;
-};
-
 struct GameData
 {
-	std::vector<CardData> Cards = std::vector<CardData>();
+	DeckType DeckType = DeckType::Deck3x2;
 	std::size_t Player1Score{};
 	std::size_t Player2Score{};
 	bool IsFirstPlayer{};
@@ -47,37 +40,10 @@ struct GameData
 
 	void Reset(const LobbyData& lobby)
 	{
+		DeckType = lobby.DeckType;
 		Player1Score = 0;
 		Player2Score = 0;
 		IsFirstPlayer = lobby.IsHost;
-
-		Cards.clear();
-
-		auto cards = 0;
-
-		switch (lobby.DeckType)
-		{
-		case DeckType::Deck3x2:
-			cards = 3 * 2;
-			break;
-		case DeckType::Deck7x2:
-			cards = 7 * 2;
-			break;
-		case DeckType::Deck6x5:
-			cards = 6 * 5;
-			break;
-		case DeckType::Deck7x6:
-			cards = 7 * 6;
-			break;
-		case DeckType::Deck10x5:
-			cards = 10 * 5;
-			break;
-		}
-
-		for (std::size_t i = 0; i < cards; ++i)
-		{
-			Cards.emplace_back();
-		}
 	}
 };
 

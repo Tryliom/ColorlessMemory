@@ -13,7 +13,7 @@ class DeckIcon
  public:
 	DeckIcon() = default;
 
-	void SetTexture(CardType cardType);
+	void SetTexture(DeckType deckType);
 	void SetPosition(sf::Vector2f position);
 
 	void Draw(sf::RenderTarget& target, sf::RenderStates states) const;

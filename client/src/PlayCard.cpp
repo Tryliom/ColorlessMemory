@@ -1,8 +1,10 @@
 #include "PlayCard.h"
 
+#include "AssetManager.h"
+
 #include <utility>
 
-PlayCard::PlayCard(CardType type, int index)
+PlayCard::PlayCard(DeckType type, int index)
 {
 	_index = index;
 	_hiddenCardTexture = AssetManager::GetCardTexture(type, false);
@@ -17,12 +19,21 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	sf::Sprite sprite;
 	sprite.setPosition(_position);
 	sprite.setScale(_scale);
+	sprite.setColor(_color);
+
+	sf::Sprite shadow = sprite;
+
+	shadow.setColor(sf::Color(0, 0, 0, 100));
+	shadow.move(0, 5 * _scale.y);
 
 	if (_revealTime > 0.f)
 	{
 		float factor = 1.f - _revealTime / _revealDuration;
 		float angle = 180.f * factor;
 		sprite.setRotation(angle);
+		shadow.setRotation(angle);
+
+		target.draw(shadow, states);
 
 		if (angle > 90.f)
 		{
@@ -37,7 +48,7 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 	else
 	{
-		sprite.setRotation(0);
+		target.draw(shadow, states);
 
 		if (_revealed)
 		{
@@ -56,6 +67,12 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		sprite.setTexture(_iconTexture);
 		sprite.setPosition(_position + sf::Vector2f(5, 5));
 		sprite.setScale(_scale);
+
+		shadow = sprite;
+		shadow.setColor(sf::Color(0, 0, 0, 100));
+		shadow.move(0, 5 * _scale.y);
+
+		target.draw(shadow, states);
 		target.draw(sprite, states);
 	}
 }
@@ -78,12 +95,14 @@ void PlayCard::OnHover(bool hover)
 {
 	if (hover)
 	{
+		_hover = true;
 		_color = sf::Color(255, 255, 255, 255);
 	}
 	else
 	{
-		const auto& rgb = 230;
+		const auto& rgb = 200;
 		_color = sf::Color(rgb, rgb, rgb, 255);
+		_hover = false;
 	}
 }
 
@@ -116,6 +135,21 @@ void PlayCard::StartFlip(float time)
 bool PlayCard::HasIcon() const
 {
 	return _index != -1;
+}
+
+bool PlayCard::IsHover() const
+{
+	return _hover;
+}
+
+bool PlayCard::IsRevealed() const
+{
+	return _revealed;
+}
+
+bool PlayCard::IsFlipping() const
+{
+	return _revealTime > 0.f;
 }
 
 sf::FloatRect PlayCard::GetGlobalBounds() const
