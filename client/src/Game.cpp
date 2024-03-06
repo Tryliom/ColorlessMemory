@@ -78,12 +78,13 @@ namespace Game
 			_lobby.Player1.IconIndex = joinLobbyPacket.Player1Icon;
 			_lobby.Player2.Name = joinLobbyPacket.Player2Name;
 			_lobby.Player2.IconIndex = joinLobbyPacket.Player2Icon;
-			_game.Reset();
 		}
 		else if (packet.type == PacketType::StartGame)
 		{
 			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
 
+			_lobby.DeckType = startGamePacket.DeckType;
+			_game.Reset(_lobby);
 			_game.YourTurn = startGamePacket.YourTurn;
 		}
 

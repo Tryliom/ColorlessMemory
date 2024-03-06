@@ -39,22 +39,44 @@ struct CardData
 
 struct GameData
 {
-	// 50 cards in 5x10 grid
-	std::array<CardData, 50> Cards;
-	std::size_t PlayerScore{};
-	std::size_t OpponentScore{};
+	std::vector<CardData> Cards = std::vector<CardData>();
+	std::size_t Player1Score{};
+	std::size_t Player2Score{};
+	bool IsFirstPlayer{};
 	bool YourTurn{};
 
-	void Reset()
+	void Reset(const LobbyData& lobby)
 	{
-		PlayerScore = 0;
-		OpponentScore = 0;
-		YourTurn = false;
+		Player1Score = 0;
+		Player2Score = 0;
+		IsFirstPlayer = lobby.IsHost;
 
-		for (auto& card : Cards)
+		Cards.clear();
+
+		auto cards = 0;
+
+		switch (lobby.DeckType)
 		{
-			card.IconIndex = -1;
-			card.Flipped = false;
+		case DeckType::Deck3x2:
+			cards = 3 * 2;
+			break;
+		case DeckType::Deck7x2:
+			cards = 7 * 2;
+			break;
+		case DeckType::Deck6x5:
+			cards = 6 * 5;
+			break;
+		case DeckType::Deck7x6:
+			cards = 7 * 6;
+			break;
+		case DeckType::Deck10x5:
+			cards = 10 * 5;
+			break;
+		}
+
+		for (std::size_t i = 0; i < cards; ++i)
+		{
+			Cards.emplace_back();
 		}
 	}
 };
