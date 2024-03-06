@@ -86,18 +86,3 @@ struct InvalidPacket final : Packet
 
 sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType);
 sf::Packet& operator >>(sf::Packet& packet, Packet& packetType);
-
-sf::Packet& operator <<(sf::Packet& packet, const LobbyInformationPacket& joinLobbyPacket);
-sf::Packet& operator >>(sf::Packet& packet, LobbyInformationPacket& joinLobbyPacket);
-
-sf::Packet& operator <<(sf::Packet& packet, const ChangeDeckPacket& changeDeckPacket);
-sf::Packet& operator >>(sf::Packet& packet, ChangeDeckPacket& changeDeckPacket);
-
-sf::Packet& operator <<(sf::Packet& packet, const JoinLobbyPacket& joinLobbyPacket);
-sf::Packet& operator >>(sf::Packet& packet, JoinLobbyPacket& joinLobbyPacket);
-
-sf::Packet& operator <<(sf::Packet& packet, const LeaveLobbyPacket& leaveLobbyPacket);
-sf::Packet& operator >>(sf::Packet& packet, LeaveLobbyPacket& leaveLobbyPacket);
-
-sf::Packet& operator <<(sf::Packet& packet, const StartGamePacket& startGamePacket);
-sf::Packet& operator >>(sf::Packet& packet, StartGamePacket& startGamePacket);
