@@ -69,15 +69,28 @@ MenuGui::MenuGui()
 
 		_buttons.emplace_back(iconButton);
 
+		const auto& cardIcon = &AssetManager::GetCardIcon(_iconIndexes[i]);
+		const auto& iconBackground = &AssetManager::GetTexture(TextureType::SIMPLE_ICON_BACKGROUND);
+		const auto& shadowOffset = sf::Vector2f(0, 5);
+		const auto& shadowColor = sf::Color(0, 0, 0, 100);
+
 		// Add icon image
 		_icons[i] = sf::RectangleShape(iconSize);
-		_icons[i].setTexture(&AssetManager::GetCardIcon(_iconIndexes[i]));
+		_icons[i].setTexture(cardIcon);
 		_icons[i].setPosition(xStart + i * (width / _iconIndexes.size()), Game::HEIGHT / 2.f - 200.f);
+		_iconShadows[i] = sf::RectangleShape(iconSize);
+		_iconShadows[i].setTexture(cardIcon);
+		_iconShadows[i].setPosition(_icons[i].getPosition() + shadowOffset * 0.5f);
+		_iconShadows[i].setFillColor(shadowColor);
 
 		// Add background
-		_backgrounds[i] = sf::RectangleShape(sf::Vector2f(iconSize.x, iconSize.y * 0.7f));
-		_backgrounds[i].setFillColor(sf::Color(0, 0, 0, 50));
-		_backgrounds[i].setPosition(xStart + i * (width / _iconIndexes.size()), Game::HEIGHT / 2.f - 217.f + iconSize.y * 0.3f);
+		_backgrounds[i] = sf::RectangleShape(iconSize);
+		_backgrounds[i].setTexture(iconBackground);
+		_backgrounds[i].setPosition(_icons[i].getPosition());
+		_backgroundShadows[i] = sf::RectangleShape(iconSize);
+		_backgroundShadows[i].setTexture(iconBackground);
+		_backgroundShadows[i].setPosition(_icons[i].getPosition() + shadowOffset);
+		_backgroundShadows[i].setFillColor(shadowColor);
 	}
 
 	// Create texts
@@ -100,9 +113,19 @@ MenuGui::MenuGui()
 
 void MenuGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	for (auto& backgroundShadow : _backgroundShadows)
+	{
+		target.draw(backgroundShadow, states);
+	}
+
 	for (auto& background : _backgrounds)
 	{
 		target.draw(background, states);
+	}
+
+	for (auto& shadow : _iconShadows)
+	{
+		target.draw(shadow, states);
 	}
 
 	for (auto& icon : _icons)

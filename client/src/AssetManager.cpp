@@ -12,6 +12,9 @@ namespace AssetManager
 	void Initialize()
 	{
 		textures[static_cast<int>(TextureType::BACKGROUND_MENU)].loadFromFile("data/textures/background.png");
+        textures[static_cast<int>(TextureType::SIMPLE_ICON_BACKGROUND)].loadFromFile("data/textures/ui/0.png");
+        textures[static_cast<int>(TextureType::PLAYER1_ICON_BACKGROUND)].loadFromFile("data/textures/ui/1.png");
+        textures[static_cast<int>(TextureType::PLAYER2_ICON_BACKGROUND)].loadFromFile("data/textures/ui/2.png");
 
 		mainFont.loadFromFile("data/font/Retro Gaming.ttf");
 
