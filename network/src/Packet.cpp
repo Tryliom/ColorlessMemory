@@ -40,13 +40,13 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 	{
 		const auto& joinLobbyPacket = dynamic_cast<const LobbyInformationPacket&>(packetType);
 		packet << joinLobbyPacket.IsHost << joinLobbyPacket.WaitingForOpponent << joinLobbyPacket.Player1Name
-			<< joinLobbyPacket.Player2Name << joinLobbyPacket.Player1Icon << joinLobbyPacket.Player2Icon << static_cast<sf::Uint8>(joinLobbyPacket.DeckType);
+			<< joinLobbyPacket.Player2Name << joinLobbyPacket.Player1Icon << joinLobbyPacket.Player2Icon << static_cast<sf::Uint8>(joinLobbyPacket.ChosenDeckType);
 		break;
 	}
 	case PacketType::ChangeDeck:
 	{
 		const auto& changeDeckPacket = dynamic_cast<const ChangeDeckPacket&>(packetType);
-		packet << static_cast<sf::Uint8>(changeDeckPacket.DeckType);
+		packet << static_cast<sf::Uint8>(changeDeckPacket.ChosenDeckType);
 		break;
 	}
 	case PacketType::JoinLobby:
@@ -63,7 +63,7 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 	case PacketType::StartGame:
 	{
 		const auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packetType);
-		packet << static_cast<sf::Uint8>(startGamePacket.DeckType) << startGamePacket.YourTurn;
+		packet << static_cast<sf::Uint8>(startGamePacket.ChosenDeckType) << startGamePacket.YourTurn;
 		break;
 	}
 	case PacketType::Turn:
@@ -96,7 +96,7 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 			>> joinLobbyPacket->Player2Name >> joinLobbyPacket->Player1Icon >> joinLobbyPacket->Player2Icon;
 		sf::Uint8 deckTypeUint;
 		packet >> deckTypeUint;
-		joinLobbyPacket->DeckType = static_cast<DeckType>(deckTypeUint);
+		joinLobbyPacket->ChosenDeckType = static_cast<DeckType>(deckTypeUint);
 		break;
 	}
 	case PacketType::ChangeDeck:
@@ -104,7 +104,7 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 		auto* changeDeckPacket = dynamic_cast<ChangeDeckPacket*>(&packetType);
 		sf::Uint8 deckTypeUint;
 		packet >> deckTypeUint;
-		changeDeckPacket->DeckType = static_cast<DeckType>(deckTypeUint);
+		changeDeckPacket->ChosenDeckType = static_cast<DeckType>(deckTypeUint);
 		break;
 	}
 	case PacketType::JoinLobby:
@@ -123,7 +123,7 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 		auto* startGamePacket = dynamic_cast<StartGamePacket*>(&packetType);
 		sf::Uint8 deckTypeUint;
 		packet >> deckTypeUint >> startGamePacket->YourTurn;
-		startGamePacket->DeckType = static_cast<DeckType>(deckTypeUint);
+		startGamePacket->ChosenDeckType = static_cast<DeckType>(deckTypeUint);
 		break;
 	}
 	case PacketType::Turn:

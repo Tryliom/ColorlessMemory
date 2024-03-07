@@ -95,7 +95,7 @@ namespace GameServer
 			{
 				if (lobby.player1 == socket || lobby.player2 == socket)
 				{
-					lobby.deckType = dynamic_cast<ChangeDeckPacket*>(packet)->DeckType;
+					lobby.deckType = dynamic_cast<ChangeDeckPacket*>(packet)->ChosenDeckType;
 					break;
 				}
 			}

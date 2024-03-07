@@ -3,6 +3,8 @@
 #include "PacketManager.h"
 #include "Logger.h"
 
+#include <thread>
+
 void NetworkClientManager::ReceivePackets(Client& client)
 {
 	while (_running)

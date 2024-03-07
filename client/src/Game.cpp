@@ -83,7 +83,7 @@ namespace Game
 		{
 			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
 
-			_lobby.DeckType = startGamePacket.DeckType;
+			_lobby.DeckType = startGamePacket.ChosenDeckType;
 			_game.Reset(_lobby);
 			_game.YourTurn = startGamePacket.YourTurn;
 		}

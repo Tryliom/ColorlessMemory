@@ -46,29 +46,22 @@ add_custom_target(
 
 # Client
 file(GLOB_RECURSE CLIENT_FILES client/src/*.cpp client/include/*.h)
-add_library(Client STATIC ${CLIENT_FILES})
-target_include_directories(Client PUBLIC client/include/)
-target_include_directories(Client PUBLIC client/src/)
-target_link_libraries(Client PUBLIC sfml-graphics sfml-window sfml-system sfml-network)
+add_library(ClientPart STATIC ${CLIENT_FILES})
+target_include_directories(ClientPart PUBLIC client/include/)
+target_include_directories(ClientPart PUBLIC client/src/)
+target_link_libraries(ClientPart PUBLIC sfml-graphics sfml-window sfml-system sfml-network)
 
 if(MSVC)
-    target_link_libraries(Client PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
+    target_link_libraries(ClientPart PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
 else()
-    target_link_libraries(Client PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
+    target_link_libraries(ClientPart PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
 endif()
 
 # Server
 file(GLOB_RECURSE SERVER_FILES server/src/*.cpp server/include/*.h)
-add_library(Server STATIC ${SERVER_FILES})
-target_include_directories(Server PUBLIC server/include/)
-target_include_directories(Server PUBLIC server/src/)
-target_link_libraries(Server PUBLIC sfml-graphics sfml-window sfml-system sfml-network)
-
-if(MSVC)
-    target_link_libraries(Server PRIVATE sfml-main FLAC OpenAL OpenGL Vorbis)
-else()
-    target_link_libraries(Server PRIVATE X11 FLAC UDev OpenAL ${OPENGL_LIBRARIES})
-endif()
+add_library(ServerPart STATIC ${SERVER_FILES})
+target_include_directories(ServerPart PUBLIC server/include/)
+target_include_directories(ServerPart PUBLIC server/src/)
 
 # Common
 file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
@@ -85,10 +78,10 @@ target_link_libraries(Network PUBLIC sfml-system sfml-network)
 
 # Linking
 target_link_libraries(Network PUBLIC Common)
-target_link_libraries(Client PUBLIC Network)
-target_link_libraries(Server PUBLIC Network)
+target_link_libraries(ClientPart PUBLIC Network)
+target_link_libraries(ServerPart PUBLIC Network)
 
-target_link_libraries(client PRIVATE Client)
-target_link_libraries(server PRIVATE Server)
+target_link_libraries(client PRIVATE ClientPart)
+target_link_libraries(server PRIVATE ServerPart)
 
 add_dependencies(client data_target)
