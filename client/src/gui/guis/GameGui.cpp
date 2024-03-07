@@ -137,6 +137,7 @@ void GameGui::OnCheckInputs(sf::Event event)
 void GameGui::OnUpdate(sf::Time elapsed)
 {
 	const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(Game::GetWindow()));
+	auto& gameData = Game::GetGame();
 
 	for (auto& card : _playCards)
 	{
@@ -146,7 +147,7 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 		if (card.GetGlobalBounds().contains(mousePosition))
 		{
-			if (!card.IsHover())
+			if (!card.IsHover() && gameData.YourTurn)
 			{
 				card.OnHover(true);
 			}
@@ -166,9 +167,7 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 		if (_beforeScoringTimer <= 0.f)
 		{
-			auto& gameData = Game::GetGame();
-
-			if (gameData.CardIndex1 == gameData.CardIndex2)
+			if (_playCards[gameData.CardIndex1].GetIconIndex() == _playCards[gameData.CardIndex2].GetIconIndex())
 			{
 				_playCards[gameData.CardIndex1].Disable();
 				_playCards[gameData.CardIndex2].Disable();
@@ -198,6 +197,8 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 		if (_endTurnTimer <= 0.f)
 		{
+			//TODO: Check if game is over, then show winner and redirect to lobby
+
 			StartTurn();
 		}
 	}
@@ -265,6 +266,14 @@ void GameGui::StartTurn()
 	gameData.CardIndex1 = -1;
 	gameData.CardIndex2 = -1;
 	_yourTurn = gameData.YourTurn;
+
+	if (!_yourTurn)
+	{
+		for (auto& card : _playCards)
+		{
+			card.OnHover(false);
+		}
+	}
 
 	_texts[1] = Text(
 		sf::Vector2f(Game::WIDTH / 2.f, 150.f),

@@ -44,7 +44,7 @@ class PlayCard : public sf::Drawable
 	void Click();
 	void Disable();
 
-	bool HasIcon() const;
+	int GetIconIndex() const;
 	bool IsHover() const;
 	bool IsRevealed() const;
 	bool IsFlipping() const;

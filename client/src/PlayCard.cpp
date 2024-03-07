@@ -19,13 +19,13 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	const auto& globalBounds = GetGlobalBounds();
 	sf::Sprite sprite;
 
-	sprite.setPosition(_position);
+	sprite.setPosition(_position + sf::Vector2f(globalBounds.width / 2.f, 0));
+	sprite.setOrigin(globalBounds.width / 2.f, 0);
 	sprite.setScale(_scale);
 	sprite.setColor(_color);
 
 	sf::Sprite shadow = sprite;
 
-	shadow.setScale(_scale);
 	shadow.setColor(sf::Color(0, 0, 0, 100));
 	shadow.move(0, 5 * _scale.y);
 
@@ -35,23 +35,21 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		auto scale = 2.f * factor;
 		auto scaleX = 1.f - scale;
 		auto absScaleX = std::abs(scaleX);
+		auto currentScaleX = _scale.x * absScaleX;
 
-		sprite.setScale(_scale.x * absScaleX, _scale.y);
-		shadow.setScale(_scale.x * absScaleX, _scale.y);
-
-		sprite.setOrigin(0, 0);
-		shadow.setOrigin(0, 0);
+		sprite.setScale(currentScaleX, _scale.y);
+		shadow.setScale(currentScaleX, _scale.y);
 
 		target.draw(shadow, states);
 
 		if (scaleX <= 0.f)
 		{
-			sprite.setTexture(_revealed ? _cardTexture : _hiddenCardTexture);
+			sprite.setTexture(_revealed ? _hiddenCardTexture : _cardTexture);
 			target.draw(sprite, states);
 		}
 		else
 		{
-			sprite.setTexture(_revealed ? _hiddenCardTexture : _cardTexture);
+			sprite.setTexture(_revealed ? _cardTexture : _hiddenCardTexture);
 			target.draw(sprite, states);
 		}
 	}
@@ -71,10 +69,27 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		}
 	}
 
-	if (_index != -1 && _revealed)
+	bool displayIcon = _index != -1;
+	bool inAnimation = _revealTime > 0.f;
+	float percentage = 1.f - _revealTime / _revealDuration;
+
+	if (displayIcon && _revealed && inAnimation && percentage > 0.5f)
 	{
+		displayIcon = false;
+	}
+
+	if (displayIcon && !_revealed && (!inAnimation || percentage < 0.5f))
+	{
+		displayIcon = false;
+	}
+
+	if (displayIcon)
+	{
+		const auto& iconTextureBounds = sf::Vector2f(_iconTexture.getSize());
+
 		sprite.setTexture(_iconTexture);
-		sprite.setPosition(_position);
+		sprite.setPosition(_position + sf::Vector2f(iconTextureBounds.x / 2.f, 0));
+		sprite.setOrigin(iconTextureBounds.x / 2.f, 0);
 
 		shadow = sprite;
 		shadow.setColor(sf::Color(0, 0, 0, 100));
@@ -95,13 +110,15 @@ void PlayCard::Update(sf::Time elapsed)
 		{
 			_revealTime = 0.f;
 			_revealed = !_revealed;
+
+			OnHover(_hover);
 		}
 	}
 }
 
 void PlayCard::OnHover(bool hover)
 {
-	if (_disabled) return;
+	if (_disabled || _revealed) return;
 
 	if (hover)
 	{
@@ -140,6 +157,7 @@ void PlayCard::SetScale(float scale)
 void PlayCard::StartFlip()
 {
 	_revealTime = _revealDuration;
+	_color = sf::Color(255, 255, 255, 255);
 }
 
 void PlayCard::Click()
@@ -151,11 +169,7 @@ void PlayCard::Disable()
 {
 	_onClick = nullptr;
 	_disabled = true;
-}
-
-bool PlayCard::HasIcon() const
-{
-	return _index != -1;
+	_color = sf::Color(255, 255, 255, 255);
 }
 
 bool PlayCard::IsHover() const
@@ -181,4 +195,8 @@ sf::FloatRect PlayCard::GetGlobalBounds() const
 	sprite.setTexture(_cardTexture);
 
 	return sprite.getGlobalBounds();
+}
+int PlayCard::GetIconIndex() const
+{
+	return _index;
 }
