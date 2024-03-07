@@ -63,6 +63,8 @@ void Gui::Update(const sf::Time elapsed)
 
 void Gui::CheckInputs(const sf::Event event)
 {
+	OnCheckInputs(event);
+
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
 		if (event.mouseButton.button == sf::Mouse::Left)
@@ -77,4 +79,5 @@ void Gui::CheckInputs(const sf::Event event)
 			}
 		}
 	}
+
 }

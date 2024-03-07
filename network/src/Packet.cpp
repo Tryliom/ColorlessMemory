@@ -1,5 +1,20 @@
 #include "Packet.h"
 
+std::string PacketTypeToString(PacketType type)
+{
+	switch (type)
+	{
+	case PacketType::LobbyInformation: return "LobbyInformation";
+	case PacketType::ChangeDeck: return "ChangeDeck";
+	case PacketType::JoinLobby: return "JoinLobby";
+	case PacketType::LeaveLobby: return "LeaveLobby";
+	case PacketType::StartGame: return "StartGame";
+	case PacketType::Turn: return "Turn";
+	case PacketType::CardInformation: return "CardInformation";
+	default: return "Invalid";
+	}
+}
+
 Packet* Packet::FromType(PacketType type)
 {
 	switch (type)

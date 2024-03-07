@@ -16,7 +16,7 @@ void NetworkClientManager::ReceivePackets(Client& client)
 		}
 
 		std::scoped_lock lock(_mutex);
-		_packetReceived.push_back(packet);
+		_packetReceived.push(packet);
 	}
 }
 
@@ -50,6 +50,7 @@ Packet* NetworkClientManager::PopPacket()
 	if (_packetReceived.empty()) return nullptr;
 
 	auto* packet = _packetReceived.front();
-	_packetReceived.pop_back();
+	_packetReceived.pop();
+
 	return packet;
 }

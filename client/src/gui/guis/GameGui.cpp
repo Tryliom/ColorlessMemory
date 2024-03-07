@@ -50,7 +50,7 @@ GameGui::GameGui()
 
 		_playCards.emplace_back(gameData.DeckType, -1);
 		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset),startY + y * (cardSize.y + yOffset) });
-		//TODO: Add on click func that redirect on a class func with info about the card
+		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
 	}
 
 	// Create texts
@@ -83,6 +83,19 @@ GameGui::GameGui()
 	_player1.SetScore(0);
 	_player2.SetScore(0);
 
+	// Set turn
+	_yourTurn = gameData.YourTurn;
+
+	// Create turn text
+	auto turn = Text(
+		sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+		{
+			TextLine({CustomText{.Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30}})
+		}
+	);
+
+	_texts.emplace_back(turn);
+
 	//TODO: Add leave button and implement leave game func for server and handle to redirect other user
 }
 
@@ -100,6 +113,25 @@ void GameGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	target.draw(_player1, states);
 	target.draw(_player2, states);
+}
+
+void GameGui::OnCheckInputs(sf::Event event)
+{
+	if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.mouseButton.button == sf::Mouse::Left)
+		{
+			for (auto& card : _playCards)
+			{
+				if (card.IsFlipping()) continue;
+
+				if (card.IsHover() && !_blockInput)
+				{
+					card.Click();
+				}
+			}
+		}
+	}
 }
 
 void GameGui::OnUpdate(sf::Time elapsed)
@@ -127,6 +159,48 @@ void GameGui::OnUpdate(sf::Time elapsed)
 			}
 		}
 	}
+
+	if (_beforeScoringTimer > 0.f)
+	{
+		_beforeScoringTimer -= elapsed.asSeconds();
+
+		if (_beforeScoringTimer <= 0.f)
+		{
+			auto& gameData = Game::GetGame();
+
+			if (gameData.CardIndex1 == gameData.CardIndex2)
+			{
+				_playCards[gameData.CardIndex1].Disable();
+				_playCards[gameData.CardIndex2].Disable();
+
+				auto& player = _yourTurn ? _player1 : _player2;
+				auto& score = _yourTurn ? gameData.Player1Score : gameData.Player2Score;
+
+				score++;
+
+				player.SetScore(static_cast<int>(score));
+
+				_endTurnTimer = 0.25f;
+			}
+			else
+			{
+				_playCards[gameData.CardIndex1].StartFlip();
+				_playCards[gameData.CardIndex2].StartFlip();
+
+				_endTurnTimer = 0.5f;
+			}
+		}
+	}
+
+	if (_endTurnTimer > 0.f)
+	{
+		_endTurnTimer -= elapsed.asSeconds();
+
+		if (_endTurnTimer <= 0.f)
+		{
+			StartTurn();
+		}
+	}
 }
 
 void GameGui::OnPacketReceived(const Packet& packet)
@@ -136,13 +210,66 @@ void GameGui::OnPacketReceived(const Packet& packet)
 		auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packet);
 
 		_playCards[cardInformationPacket.CardIndex].SetIndex(cardInformationPacket.CardIndex);
+
+		SelectCard(cardInformationPacket.CardIndex);
 	}
-	else if (packet.type == PacketType::Turn)
+}
+
+void GameGui::OnSelectPlayCard(std::size_t i)
+{
+	auto& gameData = Game::GetGame();
+
+	if (!_yourTurn || gameData.CardIndex1 != -1 && gameData.CardIndex2 != -1) return;
+
+	auto& card = _playCards[i];
+
+	if (card.IsFlipping()) return;
+
+	// Send packet to know icon and other player
+	Game::SendPacket(new CardInformationPacket(i, -1));
+}
+
+void GameGui::SelectCard(std::size_t i)
+{
+	auto& gameData = Game::GetGame();
+
+	if (gameData.CardIndex1 == i || gameData.CardIndex2 == i) return;
+
+	auto& card = _playCards[i];
+
+	if (card.IsFlipping()) return;
+
+	card.StartFlip();
+
+	if (gameData.CardIndex1 == -1)
 	{
-		auto& turnPacket = dynamic_cast<const TurnPacket&>(packet);
-
-		Game::GetGame().YourTurn = turnPacket.YourTurn;
-
-		//TODO: Diplay a text to show who's turn it is
+		gameData.CardIndex1 = i;
 	}
+	else if (gameData.CardIndex2 == -1)
+	{
+		gameData.CardIndex2 = i;
+	}
+
+	if (gameData.CardIndex1 != -1 && gameData.CardIndex2 != -1)
+	{
+		_blockInput = true;
+		_beforeScoringTimer = 1.f;
+	}
+}
+
+void GameGui::StartTurn()
+{
+	auto& gameData = Game::GetGame();
+
+	_blockInput = false;
+	gameData.CardIndex1 = -1;
+	gameData.CardIndex2 = -1;
+	_yourTurn = gameData.YourTurn;
+
+	_texts[1] = Text(
+		sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+		{
+			TextLine({CustomText{.Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30}})
+		}
+	);
 }

@@ -33,6 +33,8 @@ struct LobbyData
 struct GameData
 {
 	DeckType DeckType = DeckType::Deck3x2;
+	int CardIndex1 {-1};
+	int CardIndex2 {-1};
 	std::size_t Player1Score{};
 	std::size_t Player2Score{};
 	bool IsFirstPlayer{};

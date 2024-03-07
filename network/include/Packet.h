@@ -18,6 +18,8 @@ enum class PacketType
 	Invalid // Always last
 };
 
+std::string PacketTypeToString(PacketType type);
+
 // Packet attributes always need to be initialized to default values
 
 struct Packet

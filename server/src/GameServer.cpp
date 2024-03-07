@@ -173,8 +173,8 @@ namespace GameServer
 					else
 					{
 						// Send a message to the players whose turn it is
-						PacketManager::SendPacket(*game.player1, new TurnPacket(playerTurn == 0));
-						PacketManager::SendPacket(*game.player2, new TurnPacket(playerTurn == 1));
+						PacketManager::SendPacket(*game.player1, new TurnPacket(game.turn == 0));
+						PacketManager::SendPacket(*game.player2, new TurnPacket(game.turn == 1));
 					}
 				}
 

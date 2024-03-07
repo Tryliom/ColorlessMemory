@@ -9,8 +9,8 @@ class NetworkClientManager
 {
 private:
 	bool _running = true;
-	std::vector<Packet*> _packetReceived;
-	mutable std::mutex _mutex;
+	std::queue<Packet*> _packetReceived;
+	mutable std::shared_mutex _mutex;
 
 	void ReceivePackets(Client& client);
 	void SendPackets(Client& client) const;

@@ -23,6 +23,7 @@ protected:
 	 * @brief Draw additional elements after background and before buttons and texts
 	 */
 	virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const {}
+	virtual void OnCheckInputs(sf::Event event) {}
 
 public:
 	void Update(sf::Time elapsed);

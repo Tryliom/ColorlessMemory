@@ -87,6 +87,12 @@ namespace Game
 			_game.Reset(_lobby);
 			_game.YourTurn = startGamePacket.YourTurn;
 		}
+		else if (packet.type == PacketType::Turn)
+		{
+			auto& turnPacket = dynamic_cast<const TurnPacket&>(packet);
+
+			_game.YourTurn = turnPacket.YourTurn;
+		}
 
 		if (_gui != nullptr)
 		{

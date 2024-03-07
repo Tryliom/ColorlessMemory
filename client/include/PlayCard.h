@@ -14,6 +14,7 @@ class PlayCard : public sf::Drawable
 	sf::Vector2f _scale = {1, 1};
 	sf::Color _color = sf::Color(200, 200, 200, 255);
 	bool _hover = false;
+	bool _disabled = false;
 
 	sf::Texture _hiddenCardTexture;
 	sf::Texture _cardTexture;
@@ -39,7 +40,10 @@ class PlayCard : public sf::Drawable
 	void SetPosition(sf::Vector2f position);
 	void SetScale(float scale);
 
-	void StartFlip(float time);
+	void StartFlip();
+	void Click();
+	void Disable();
+
 	bool HasIcon() const;
 	bool IsHover() const;
 	bool IsRevealed() const;
