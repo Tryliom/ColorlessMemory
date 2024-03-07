@@ -33,15 +33,30 @@ GameGui::GameGui()
 	}
 
 	// Create play cards
-	const auto& cardSize = sf::Vector2f(AssetManager::GetCardIcon(0).getSize());
+
+	// Max size for cards
+	const auto& maxWidth = Game::WIDTH - 600.f;
+	const auto& maxHeight = Game::HEIGHT - 200.f;
+
+	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(0).getSize());
 	const auto& xOffset = 20.f;
 	const auto& yOffset = 20.f;
-	const auto& width = cardSize.x * _xCards + xOffset * (_xCards - 1);
-	const auto& height = cardSize.y * _yCards + yOffset * (_yCards - 1);
-	const auto& startX = (Game::WIDTH - width) / 2.f;
-	const auto& startY = (Game::HEIGHT - height) / 2.f;
+	auto width = cardSize.x * _xCards + xOffset * (_xCards - 1);
+	auto height = cardSize.y * _yCards + yOffset * (_yCards - 1);
 
-	//TODO: Calculate scale to fit the cards in the screen
+	// Calculate scale to fit the cards in the screen
+	auto scale = std::min(maxWidth / width, maxHeight / height);
+
+	if (scale > 1.f) scale = 1.f;
+
+	cardSize *= scale;
+	width = cardSize.x * _xCards + xOffset * (_xCards - 1);
+	height = cardSize.y * _yCards + yOffset * (_yCards - 1);
+
+	//TODO: Center cards -> they seems not correctly centered
+
+	auto startX = (Game::WIDTH - width) / 2.f;
+	auto startY = (Game::HEIGHT - height) / 2.f;
 
 	for (std::size_t i = 0; i < _xCards * _yCards; ++i)
 	{
@@ -51,6 +66,7 @@ GameGui::GameGui()
 		_playCards.emplace_back(gameData.DeckType, -1);
 		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset),startY + y * (cardSize.y + yOffset) });
 		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
+		_playCards.back().SetScale(scale);
 	}
 
 	// Create texts

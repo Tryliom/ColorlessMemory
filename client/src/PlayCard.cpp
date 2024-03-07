@@ -16,12 +16,12 @@ PlayCard::PlayCard(DeckType type, int index)
 
 void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	const auto& globalBounds = GetGlobalBounds();
+	const auto& globalBounds = _hiddenCardTexture.getSize();
 	sf::Sprite sprite;
 
-	sprite.setPosition(_position + sf::Vector2f(globalBounds.width / 2.f, 0));
-	sprite.setOrigin(globalBounds.width / 2.f, 0);
 	sprite.setScale(_scale);
+	sprite.setPosition(_position + sf::Vector2f(globalBounds.x / 2.f, 0));
+	sprite.setOrigin(globalBounds.x / 2.f, 0);
 	sprite.setColor(_color);
 
 	sf::Sprite shadow = sprite;
@@ -85,7 +85,11 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	if (displayIcon)
 	{
-		const auto& iconTextureBounds = sf::Vector2f(_iconTexture.getSize());
+		sf::Sprite iconSprite;
+		iconSprite.setScale(sprite.getScale());
+		iconSprite.setTexture(_iconTexture);
+
+		const auto& iconTextureBounds = _iconTexture.getSize();
 
 		sprite.setTexture(_iconTexture);
 		sprite.setPosition(_position + sf::Vector2f(iconTextureBounds.x / 2.f, 0));
@@ -190,9 +194,10 @@ bool PlayCard::IsFlipping() const
 sf::FloatRect PlayCard::GetGlobalBounds() const
 {
 	sf::Sprite sprite;
-	sprite.setPosition(_position);
+	sprite.setPosition(_position + sf::Vector2f(_hiddenCardTexture.getSize().x / 2.f, 0));
 	sprite.setScale(_scale);
 	sprite.setTexture(_cardTexture);
+	sprite.setOrigin(_cardTexture.getSize().x / 2.f, 0);
 
 	return sprite.getGlobalBounds();
 }
