@@ -209,7 +209,7 @@ void GameGui::OnPacketReceived(const Packet& packet)
 	{
 		auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packet);
 
-		_playCards[cardInformationPacket.CardIndex].SetIndex(cardInformationPacket.CardIndex);
+		_playCards[cardInformationPacket.CardIndex].SetIndex(cardInformationPacket.IconIndex);
 
 		SelectCard(cardInformationPacket.CardIndex);
 	}
