@@ -192,6 +192,7 @@ namespace GameServer
 	{
 		LOG("Player " << ClientToString(socket) << " disconnected");
 		RemoveFromLobby(socket);
+		//TODO: Remove it from game too
 	}
 
 	void JoinLobby(sf::TcpSocket* socket, const std::string& name, std::size_t iconIndex)

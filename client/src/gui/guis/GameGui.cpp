@@ -174,6 +174,7 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 				auto& player = _yourTurn ? _player1 : _player2;
 				auto& score = _yourTurn ? gameData.Player1Score : gameData.Player2Score;
+				//TODO: Fix to match player score
 
 				score++;
 
@@ -221,26 +222,11 @@ void GameGui::OnSelectPlayCard(std::size_t i)
 	auto& gameData = Game::GetGame();
 
 	if (!_yourTurn || gameData.CardIndex1 != -1 && gameData.CardIndex2 != -1) return;
-
-	auto& card = _playCards[i];
-
-	if (card.IsFlipping()) return;
-
-	// Send packet to know icon and other player
-	Game::SendPacket(new CardInformationPacket(i, -1));
-}
-
-void GameGui::SelectCard(std::size_t i)
-{
-	auto& gameData = Game::GetGame();
-
 	if (gameData.CardIndex1 == i || gameData.CardIndex2 == i) return;
 
 	auto& card = _playCards[i];
 
 	if (card.IsFlipping()) return;
-
-	card.StartFlip();
 
 	if (gameData.CardIndex1 == -1)
 	{
@@ -251,7 +237,27 @@ void GameGui::SelectCard(std::size_t i)
 		gameData.CardIndex2 = i;
 	}
 
-	if (gameData.CardIndex1 != -1 && gameData.CardIndex2 != -1)
+	// Send packet to know icon and other player
+	Game::SendPacket(new CardInformationPacket(i, -1));
+}
+
+void GameGui::SelectCard(std::size_t i)
+{
+	auto& gameData = Game::GetGame();
+	auto& card = _playCards[i];
+
+	card.StartFlip();
+
+	if (gameData.CardIndex1 == -1 || gameData.CardIndex1 == i)
+	{
+		gameData.CardIndex1 = i;
+	}
+	else if (gameData.CardIndex2 == -1 || gameData.CardIndex2 == i)
+	{
+		gameData.CardIndex2 = i;
+	}
+
+	if (gameData.CardIndex2 == i)
 	{
 		_blockInput = true;
 		_beforeScoringTimer = 1.f;
