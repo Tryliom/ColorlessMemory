@@ -39,8 +39,8 @@ GameGui::GameGui()
 	const auto& maxHeight = Game::HEIGHT - 200.f;
 
 	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(0).getSize());
-	const auto& xOffset = 20.f;
-	const auto& yOffset = 20.f;
+	auto xOffset = 20.f;
+	auto yOffset = 20.f;
 	auto width = cardSize.x * _xCards + xOffset * (_xCards - 1);
 	auto height = cardSize.y * _yCards + yOffset * (_yCards - 1);
 
@@ -50,13 +50,18 @@ GameGui::GameGui()
 	if (scale > 1.f) scale = 1.f;
 
 	cardSize *= scale;
+	xOffset *= scale;
+	yOffset *= scale;
 	width = cardSize.x * _xCards + xOffset * (_xCards - 1);
 	height = cardSize.y * _yCards + yOffset * (_yCards - 1);
 
-	//TODO: Center cards -> they seems not correctly centered
-
 	auto startX = (Game::WIDTH - width) / 2.f;
 	auto startY = (Game::HEIGHT - height) / 2.f;
+
+	if (scale < 1.f)
+	{
+		startX -= xOffset;
+	}
 
 	for (std::size_t i = 0; i < _xCards * _yCards; ++i)
 	{
@@ -65,8 +70,7 @@ GameGui::GameGui()
 
 		_playCards.emplace_back(gameData.DeckType, -1);
 		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset), startY + y * (cardSize.y + yOffset) });
-		_playCards.back().SetOnClicked([this, i]
-		{ OnSelectPlayCard(i); });
+		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
 		_playCards.back().SetScale(scale);
 	}
 
@@ -82,8 +86,8 @@ GameGui::GameGui()
 
 	// Create player icons
 	const auto& lobby = Game::GetLobby();
-	const auto& player1Position = sf::Vector2f(100, Game::HEIGHT / 2.f - 200.f);
-	const auto& player2Position = sf::Vector2f(Game::WIDTH - 100, Game::HEIGHT / 2.f - 200.f);
+	const auto& player1Position = sf::Vector2f(50, Game::HEIGHT / 2.f - 200.f);
+	const auto& player2Position = sf::Vector2f(Game::WIDTH - 50, Game::HEIGHT / 2.f - 200.f);
 
 	_player1 = PlayerUi(true, player1Position, true);
 	_player2 = PlayerUi(false, player2Position, true);
