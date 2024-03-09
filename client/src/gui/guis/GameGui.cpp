@@ -64,17 +64,18 @@ GameGui::GameGui()
 		const auto& y = i / _xCards;
 
 		_playCards.emplace_back(gameData.DeckType, -1);
-		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset),startY + y * (cardSize.y + yOffset) });
-		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
+		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset), startY + y * (cardSize.y + yOffset) });
+		_playCards.back().SetOnClicked([this, i]
+		{ OnSelectPlayCard(i); });
 		_playCards.back().SetScale(scale);
 	}
 
 	// Create texts
 	auto title = Text(
-		sf::Vector2f(Game::WIDTH / 2.f, 100.f),
-		{
-			TextLine({CustomText{.Text = "Game", .Size = 50}})
-		}
+			sf::Vector2f(Game::WIDTH / 2.f, 100.f),
+			{
+					TextLine({ CustomText{ .Text = "Game", .Size = 50 }})
+			}
 	);
 
 	_texts.emplace_back(title);
@@ -104,25 +105,43 @@ GameGui::GameGui()
 
 	// Create turn text
 	auto turn = Text(
-		sf::Vector2f(Game::WIDTH / 2.f, 150.f),
-		{
-			TextLine({CustomText{.Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30}})
-		}
+			sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+			{
+					TextLine({ CustomText{ .Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30 }})
+			}
 	);
 
 	_texts.emplace_back(turn);
 
-	//TODO: Add leave button and implement leave game func for server and handle to redirect other user
+	auto leaveButton = Button(
+			sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT - 100.f),
+			sf::Vector2f(200.f, 50.f),
+			true
+	);
+
+	leaveButton.SetText({
+			TextLine({ CustomText{ .Text = "LEAVE", .Style = sf::Text::Style::Bold, .Size = 30 }})
+	});
+	leaveButton.SetOnClick([]()
+	{
+		Game::SendPacket(new LeaveGamePacket());
+		Game::SetState(GameState::MAIN_MENU);
+	});
+
+	_buttons.emplace_back(leaveButton);
 }
 
 void GameGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	for (const auto& card : _playCards)
+	if (!_gameOver)
 	{
-		target.draw(card, states);
+		for (const auto& card: _playCards)
+		{
+			target.draw(card, states);
+		}
 	}
 
-	for (const auto& text : _texts)
+	for (const auto& text: _texts)
 	{
 		target.draw(text, states);
 	}
@@ -137,7 +156,7 @@ void GameGui::OnCheckInputs(sf::Event event)
 	{
 		if (event.mouseButton.button == sf::Mouse::Left)
 		{
-			for (auto& card : _playCards)
+			for (auto& card: _playCards)
 			{
 				if (card.IsFlipping()) continue;
 
@@ -155,7 +174,7 @@ void GameGui::OnUpdate(sf::Time elapsed)
 	const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(Game::GetWindow()));
 	auto& gameData = Game::GetGame();
 
-	for (auto& card : _playCards)
+	for (auto& card: _playCards)
 	{
 		card.Update(elapsed);
 
@@ -188,12 +207,10 @@ void GameGui::OnUpdate(sf::Time elapsed)
 				_playCards[gameData.CardIndex1].Disable();
 				_playCards[gameData.CardIndex2].Disable();
 
-				auto& player = _yourTurn ? _player1 : _player2;
-				auto& score = _yourTurn ? gameData.Player1Score : gameData.Player2Score;
-				//TODO: Fix to match player score
+				auto& player = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? _player1 : _player2;
+				auto& score = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? gameData.Player1Score : gameData.Player2Score;
 
 				score++;
-
 				player.SetScore(static_cast<int>(score));
 
 				_endTurnTimer = 0.25f;
@@ -214,9 +231,24 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 		if (_endTurnTimer <= 0.f)
 		{
-			//TODO: Check if game is over, then show winner and redirect to lobby
+			if (gameData.Player1Score + gameData.Player2Score == _playCards.size() / 2)
+			{
+				const auto& player1Win = gameData.Player1Score > gameData.Player2Score;
+				const auto& isPlayer1 = gameData.IsFirstPlayer;
 
-			StartTurn();
+				_gameOver = true;
+
+				_texts[1] = Text(
+						sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+						{
+								TextLine({ CustomText{ .Text = player1Win == isPlayer1 ? "You win" : "You lose", .Size = 30 }})
+						}
+				);
+			}
+			else
+			{
+				StartTurn();
+			}
 		}
 	}
 }
@@ -230,6 +262,17 @@ void GameGui::OnPacketReceived(const Packet& packet)
 		_playCards[cardInformationPacket.CardIndex].SetIndex(cardInformationPacket.IconIndex);
 
 		SelectCard(cardInformationPacket.CardIndex);
+	}
+	else if (packet.type == PacketType::LeaveGame)
+	{
+		_gameOver = true;
+
+		_texts[1] = Text(
+				sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+				{
+						TextLine({ CustomText{ .Text = "Other player leave", .Size = 30 }})
+				}
+		);
 	}
 }
 
@@ -291,16 +334,18 @@ void GameGui::StartTurn()
 
 	if (!_yourTurn)
 	{
-		for (auto& card : _playCards)
+		for (auto& card: _playCards)
 		{
 			card.OnHover(false);
 		}
 	}
 
+	if (_gameOver) return;
+
 	_texts[1] = Text(
-		sf::Vector2f(Game::WIDTH / 2.f, 150.f),
-		{
-			TextLine({CustomText{.Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30}})
-		}
+			sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+			{
+					TextLine({ CustomText{ .Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30 }})
+			}
 	);
 }

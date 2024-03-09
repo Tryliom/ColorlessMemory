@@ -57,6 +57,7 @@ namespace GameServer
 	void OnDisconnect(sf::TcpSocket* socket);
 	void JoinLobby(sf::TcpSocket* socket, const std::string& name, std::size_t iconIndex);
 	void RemoveFromLobby(sf::TcpSocket* socket);
+	void RemoveFromGame(sf::TcpSocket* socket);
 
 	void Initialize()
 	{
@@ -186,13 +187,18 @@ namespace GameServer
 				games.erase(games.begin() + gameToDelete);
 			}
 		}
+		else if (packet->type == PacketType::LeaveGame)
+		{
+			LOG("Player " << ClientToString(socket) << " left the game");
+			RemoveFromGame(socket);
+		}
 	}
 
 	void OnDisconnect(sf::TcpSocket* socket)
 	{
 		LOG("Player " << ClientToString(socket) << " disconnected");
 		RemoveFromLobby(socket);
-		//TODO: Remove it from game too
+		RemoveFromGame(socket);
 	}
 
 	void JoinLobby(sf::TcpSocket* socket, const std::string& name, std::size_t iconIndex)
@@ -255,6 +261,31 @@ namespace GameServer
 					lobby.Reset();
 					JoinLobby(player, name, iconIndex);
 				}
+			}
+		}
+	}
+
+	void RemoveFromGame(sf::TcpSocket* socket)
+	{
+		// Remove the player from the game
+		for (auto i = 0; i < games.size(); i++)
+		{
+			auto& game = games[i];
+
+			if (game.player1 == socket || game.player2 == socket)
+			{
+				// Send a message to the other player that the opponent left the game
+				if (game.player1 == socket)
+				{
+					PacketManager::SendPacket(*game.player2, new LeaveGamePacket());
+				}
+				else
+				{
+					PacketManager::SendPacket(*game.player1, new LeaveGamePacket());
+				}
+
+				games.erase(games.begin() + i);
+				break;
 			}
 		}
 	}

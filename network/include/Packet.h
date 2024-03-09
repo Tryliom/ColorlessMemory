@@ -15,6 +15,7 @@ enum class PacketType
 	StartGame,
 	Turn,
 	CardInformation,
+	LeaveGame,
 	Invalid // Always last
 };
 
@@ -96,6 +97,11 @@ struct CardInformationPacket final : Packet
 
 	int CardIndex{};
 	int IconIndex{};
+};
+
+struct LeaveGamePacket final : Packet
+{
+	LeaveGamePacket() : Packet(PacketType::LeaveGame) {}
 };
 
 struct InvalidPacket final : Packet

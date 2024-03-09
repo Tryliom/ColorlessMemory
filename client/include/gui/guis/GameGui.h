@@ -21,6 +21,8 @@ class GameGui final :
 	float _endTurnTimer = 0.f;
 	float _beforeScoringTimer = 0.f;
 
+	bool _gameOver = false;
+
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	void OnCheckInputs(sf::Event event) override;
 

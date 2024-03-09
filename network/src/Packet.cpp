@@ -11,6 +11,7 @@ std::string PacketTypeToString(PacketType type)
 	case PacketType::StartGame: return "StartGame";
 	case PacketType::Turn: return "Turn";
 	case PacketType::CardInformation: return "CardInformation";
+	case PacketType::LeaveGame: return "LeaveGame";
 	default: return "Invalid";
 	}
 }
@@ -26,6 +27,7 @@ Packet* Packet::FromType(PacketType type)
 	case PacketType::StartGame: return new StartGamePacket();
 	case PacketType::Turn: return new TurnPacket();
 	case PacketType::CardInformation: return new CardInformationPacket();
+	case PacketType::LeaveGame: return new LeaveGamePacket();
 	default: return new InvalidPacket();
 	}
 }
@@ -76,6 +78,11 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& packetType)
 	{
 		const auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packetType);
 		packet << cardInformationPacket.CardIndex << cardInformationPacket.IconIndex;
+		break;
+	}
+	case PacketType::LeaveGame:
+	{
+		// No data to write
 		break;
 	}
 	default:
@@ -136,6 +143,11 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& packetType)
 	{
 		auto* cardInformationPacket = dynamic_cast<CardInformationPacket*>(&packetType);
 		packet >> cardInformationPacket->CardIndex >> cardInformationPacket->IconIndex;
+		break;
+	}
+	case PacketType::LeaveGame:
+	{
+		// No data to read
 		break;
 	}
 	default:
