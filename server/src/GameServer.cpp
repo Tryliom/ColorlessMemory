@@ -8,7 +8,7 @@ std::string ClientToString(sf::TcpSocket* client)
 	return client->getRemoteAddress().toString() + ':' + std::to_string(client->getRemotePort());
 }
 
-GameData::GameData(const LobbyData& lobbyData)
+Game::Game(const Lobby& lobbyData)
 {
 	player1 = lobbyData.player1;
 	player2 = lobbyData.player2;
@@ -50,8 +50,8 @@ GameData::GameData(const LobbyData& lobbyData)
 namespace GameServer
 {
 	NetworkServerManager server;
-	std::vector<LobbyData> lobbies;
-	std::vector<GameData> games;
+	std::vector<Lobby> lobbies;
+	std::vector<Game> games;
 
 	void OnReceivePacket(sf::TcpSocket* socket, Packet* packet);
 	void OnDisconnect(sf::TcpSocket* socket);

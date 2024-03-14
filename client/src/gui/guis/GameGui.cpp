@@ -2,6 +2,7 @@
 
 #include "Game.h"
 #include "AssetManager.h"
+#include "Constants.h"
 
 GameGui::GameGui()
 {
@@ -301,7 +302,7 @@ void GameGui::OnSelectPlayCard(std::size_t i)
 	}
 
 	// Send packet to know icon and other player
-	Game::SendPacket(new CardInformationPacket(i, -1));
+	Game::SendPacket(new CardInformationPacket(i, UNKNOWN_ICON_INDEX));
 }
 
 void GameGui::SelectCard(std::size_t i)

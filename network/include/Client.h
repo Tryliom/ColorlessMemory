@@ -8,6 +8,9 @@
 #include <shared_mutex>
 #include <mutex>
 
+//TODO: Add folder common, client and server
+//TODO: Make different class for each one
+
 struct Client
 {
 	sf::TcpSocket* socket = new sf::TcpSocket();

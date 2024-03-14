@@ -26,6 +26,7 @@ void NetworkClientManager::SendPackets(Client& client) const
 {
 	while (_running)
 	{
+		//TODO: Correct datarace
 		if (client.packetsToBeSent.empty()) continue;
 
 		auto* packet = client.packetsToBeSent.front();

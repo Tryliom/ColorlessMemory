@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "DeckType.h"
+#include "Constants.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -21,7 +22,7 @@ struct PlayerData
 	std::size_t IconIndex = 20;
 };
 
-struct LobbyData
+struct Lobby
 {
 	bool IsHost{};
 	bool WaitingForOpponent = true;
@@ -30,17 +31,17 @@ struct LobbyData
 	PlayerData Player2;
 };
 
-struct GameData
+struct Game
 {
 	DeckType DeckType = DeckType::Deck3x2;
-	int CardIndex1 {-1};
-	int CardIndex2 {-1};
-	std::size_t Player1Score{};
-	std::size_t Player2Score{};
+	int CardIndex1 {UNKNOWN_CARD_INDEX};
+	int CardIndex2 {UNKNOWN_CARD_INDEX};
+	char Player1Score{};
+	char Player2Score{};
 	bool IsFirstPlayer{};
 	bool YourTurn{};
 
-	void Reset(const LobbyData& lobby)
+	void Reset(const Lobby& lobby)
 	{
 		DeckType = lobby.DeckType;
 		Player1Score = 0;
@@ -63,6 +64,6 @@ namespace Game
 	void SendPacket(Packet* packet);
 
 	PlayerData& GetPlayer();
-	LobbyData& GetLobby();
-	GameData& GetGame();
+	Lobby& GetLobby();
+	Game& GetGame();
 }

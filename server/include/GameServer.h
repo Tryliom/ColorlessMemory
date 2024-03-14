@@ -7,7 +7,7 @@
 
 #include <array>
 
-struct LobbyData
+struct Lobby
 {
 	sf::TcpSocket* player1;
 	sf::TcpSocket* player2;
@@ -35,7 +35,7 @@ struct LobbyData
 	}
 };
 
-struct GameData
+struct Game
 {
 	sf::TcpSocket* player1{};
 	sf::TcpSocket* player2{};
@@ -47,7 +47,7 @@ struct GameData
 
 	std::size_t totalScore {};
 
-	explicit GameData(const LobbyData& lobbyData);
+	explicit Game(const Lobby& lobbyData);
 
 	[[nodiscard]] bool HasSelectedTwoCards() const
 	{

@@ -13,6 +13,8 @@
 
 #include <cstdlib>
 
+//TODO: Convert into a class
+//TODO: Use a render target instead of a window
 namespace Game
 {
 	// Network
@@ -29,15 +31,14 @@ namespace Game
 
 	// Game data
 	PlayerData _player;
-	LobbyData _lobby;
-	GameData _game;
+	Lobby _lobby;
+	Game _game;
 
 	void OnPacketReceived(const Packet& packet);
 	void SetBackground(const sf::Texture& texture);
 
 	void Initialize()
 	{
-		_window.setFramerateLimit(165);
 		_window.setVerticalSyncEnabled(true);
 
 		// Set the size of the game
@@ -218,12 +219,12 @@ namespace Game
 		_client.SendPacket(packet);
 	}
 
-	LobbyData& GetLobby()
+	Lobby& GetLobby()
 	{
 		return _lobby;
 	}
 
-	GameData& GetGame()
+	Game& GetGame()
 	{
 		return _game;
 	}
