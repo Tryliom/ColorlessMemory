@@ -1,4 +1,4 @@
-#include "Packet.h"
+#include "../include/Packet.h"
 
 std::string PacketTypeToString(PacketType type)
 {

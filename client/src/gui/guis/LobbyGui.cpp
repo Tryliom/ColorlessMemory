@@ -2,7 +2,6 @@
 
 #include "Game.h"
 #include "Logger.h"
-#include "Packet.h"
 #include "AssetManager.h"
 
 std::string ToString(DeckType deckType)

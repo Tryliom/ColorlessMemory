@@ -70,16 +70,29 @@ target_include_directories(Common PUBLIC common/include/)
 target_include_directories(Common PUBLIC common/src/)
 
 # Network
-file(GLOB_RECURSE NETWORK_FILES network/include/*.h network/src/*.cpp)
-add_library(Network STATIC ${NETWORK_FILES})
-target_include_directories(Network PUBLIC network/include/)
-target_include_directories(Network PUBLIC network/src/)
-target_link_libraries(Network PUBLIC sfml-system sfml-network)
+# Common
+file(GLOB_RECURSE NETWORK_COMMON_FILES network/common/include/*.h network/common/src/*.cpp)
+add_library(NetworkCommon STATIC ${NETWORK_COMMON_FILES})
+target_include_directories(NetworkCommon PUBLIC network/common/include/)
+target_include_directories(NetworkCommon PUBLIC network/common/src/)
+target_link_libraries(NetworkCommon PUBLIC sfml-system sfml-network)
+target_link_libraries(NetworkCommon PUBLIC Common)
+# Client
+file(GLOB_RECURSE NETWORK_CLIENT_FILES network/client/include/*.h network/client/src/*.cpp)
+add_library(NetworkClient STATIC ${NETWORK_CLIENT_FILES})
+target_include_directories(NetworkClient PUBLIC network/client/include/)
+target_include_directories(NetworkClient PUBLIC network/client/src/)
+target_link_libraries(NetworkClient PUBLIC NetworkCommon)
+# Server
+file(GLOB_RECURSE NETWORK_SERVER_FILES network/server/include/*.h network/server/src/*.cpp)
+add_library(NetworkServer STATIC ${NETWORK_SERVER_FILES})
+target_include_directories(NetworkServer PUBLIC network/server/include/)
+target_include_directories(NetworkServer PUBLIC network/server/src/)
+target_link_libraries(NetworkServer PUBLIC NetworkCommon)
 
 # Linking
-target_link_libraries(Network PUBLIC Common)
-target_link_libraries(ClientPart PUBLIC Network)
-target_link_libraries(ServerPart PUBLIC Network)
+target_link_libraries(ClientPart PUBLIC NetworkClient)
+target_link_libraries(ServerPart PUBLIC NetworkServer)
 
 target_link_libraries(client PRIVATE ClientPart)
 target_link_libraries(server PRIVATE ServerPart)

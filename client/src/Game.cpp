@@ -32,7 +32,7 @@ namespace Game
 	// Game data
 	PlayerData _player;
 	Lobby _lobby;
-	Game _game;
+	GameData _game;
 
 	void OnPacketReceived(const Packet& packet);
 	void SetBackground(const sf::Texture& texture);
@@ -224,7 +224,7 @@ namespace Game
 		return _lobby;
 	}
 
-	Game& GetGame()
+	GameData& GetGame()
 	{
 		return _game;
 	}

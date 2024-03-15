@@ -1,6 +1,6 @@
-#include "NetworkClientManager.h"
+#include "../include/NetworkClientManager.h"
 
-#include "PacketManager.h"
+#include "../../common/include/PacketManager.h"
 #include "Logger.h"
 
 #include <thread>

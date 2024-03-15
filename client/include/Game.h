@@ -31,7 +31,7 @@ struct Lobby
 	PlayerData Player2;
 };
 
-struct Game
+struct GameData
 {
 	DeckType DeckType = DeckType::Deck3x2;
 	int CardIndex1 {UNKNOWN_CARD_INDEX};
@@ -65,5 +65,5 @@ namespace Game
 
 	PlayerData& GetPlayer();
 	Lobby& GetLobby();
-	Game& GetGame();
+	GameData& GetGame();
 }
