@@ -6,6 +6,8 @@
 #include <functional>
 
 //TODO: Network Interface -> Send/receive packet
+//TODO: Bind a Network Interface to this which it will be used to send/receive packets
+//TODO: Use PlayerId (host + port) to identify the client
 
 /**
  * Receive and send packet from/to server

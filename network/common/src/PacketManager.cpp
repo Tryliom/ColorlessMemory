@@ -1,9 +1,13 @@
-#include "../include/PacketManager.h"
+#include "PacketManager.h"
 
 #include "Logger.h"
 
 namespace PacketManager
 {
+	std::vector<Packet*> _allPacketTypes = {
+		new InvalidPacket()
+	};
+
 	bool SendPacket(sf::TcpSocket& socket, Packet* packet)
 	{
 		auto* p = CreatePacket(packet);
@@ -26,7 +30,7 @@ namespace PacketManager
 		packet >> packetTypeUint;
 		auto packetType = static_cast<PacketType>(packetTypeUint);
 
-		Packet* ourPacket = Packet::FromType(packetType);
+		Packet* ourPacket = _allPacketTypes[static_cast<int>(packetType)]->Clone();
 
 		packet >> *ourPacket;
 
@@ -38,5 +42,10 @@ namespace PacketManager
 		auto* p = new sf::Packet();
 		*p << *packet;
 		return p;
+	}
+
+	void RegisterPacketType(Packet* packet)
+	{
+		_allPacketTypes.push_back(packet);
 	}
 }

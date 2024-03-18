@@ -11,7 +11,7 @@ void NetworkClientManager::ReceivePackets(Client& client)
 	{
 		Packet* packet = PacketManager::ReceivePacket(*client.socket);
 
-		if (packet->type == PacketType::Invalid)
+		if (packet->Type == PacketType::Invalid)
 		{
 			LOG_ERROR("Could not receive packet");
 			std::exit(EXIT_FAILURE);

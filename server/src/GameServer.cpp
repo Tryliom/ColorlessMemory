@@ -83,13 +83,13 @@ namespace GameServer
 
 	void OnReceivePacket(sf::TcpSocket* socket, Packet* packet)
 	{
-		if (packet->type == PacketType::JoinLobby)
+		if (packet->Type == PacketType::JoinLobby)
 		{
 			const auto* joinLobbyPacket = dynamic_cast<JoinLobbyPacket*>(packet);
 			LOG("Player " << ClientToString(socket) << " aka " << joinLobbyPacket->Name << " joined the lobby");
 			JoinLobby(socket, joinLobbyPacket->Name, joinLobbyPacket->IconIndex);
 		}
-		else if (packet->type == PacketType::ChangeDeck)
+		else if (packet->Type == PacketType::ChangeDeck)
 		{
 			// Find the lobby with the player
 			for (auto& lobby : lobbies)
@@ -101,12 +101,12 @@ namespace GameServer
 				}
 			}
 		}
-		else if (packet->type == PacketType::LeaveLobby)
+		else if (packet->Type == PacketType::LeaveLobby)
 		{
 			LOG("Player " << ClientToString(socket) << " left the lobby");
 			RemoveFromLobby(socket);
 		}
-		else if (packet->type == PacketType::StartGame)
+		else if (packet->Type == PacketType::StartGame)
 		{
 			// Find the lobby with the player
 			for (auto& lobby : lobbies)
@@ -127,7 +127,7 @@ namespace GameServer
 				}
 			}
 		}
-		else if (packet->type == PacketType::CardInformation)
+		else if (packet->Type == PacketType::CardInformation)
 		{
 			const auto* cardInformationPacket = dynamic_cast<CardInformationPacket*>(packet);
 			auto gameToDelete = -1;
@@ -144,14 +144,14 @@ namespace GameServer
 
 				if (playerTurn != requestPlayer) return;
 				if (game.HasSelectedTwoCards()) return;
-				if (game.selectedCards[0] == cardInformationPacket->CardIndex) return;
+				if (game.selectedCards[0] == cardInformationPacket->CardIndexInDeck) return;
 
-				game.SelectCard(cardInformationPacket->CardIndex);
+				game.SelectCard(cardInformationPacket->CardIndexInDeck);
 
-				const int iconIndex = static_cast<int>(game.cards[cardInformationPacket->CardIndex]);
+				const int iconIndex = static_cast<int>(game.cards[cardInformationPacket->CardIndexInDeck]);
 
-				PacketManager::SendPacket(*game.player1, new CardInformationPacket(cardInformationPacket->CardIndex, iconIndex));
-				PacketManager::SendPacket(*game.player2, new CardInformationPacket(cardInformationPacket->CardIndex, iconIndex));
+				PacketManager::SendPacket(*game.player1, new CardInformationPacket(cardInformationPacket->CardIndexInDeck, iconIndex));
+				PacketManager::SendPacket(*game.player2, new CardInformationPacket(cardInformationPacket->CardIndexInDeck, iconIndex));
 
 				if (game.HasSelectedTwoCards())
 				{
@@ -187,7 +187,7 @@ namespace GameServer
 				games.erase(games.begin() + gameToDelete);
 			}
 		}
-		else if (packet->type == PacketType::LeaveGame)
+		else if (packet->Type == PacketType::LeaveGame)
 		{
 			LOG("Player " << ClientToString(socket) << " left the game");
 			RemoveFromGame(socket);

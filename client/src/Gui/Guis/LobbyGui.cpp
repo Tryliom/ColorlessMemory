@@ -129,11 +129,11 @@ LobbyGui::LobbyGui()
 
 void LobbyGui::OnPacketReceived(const Packet& packet)
 {
-	if (packet.type == PacketType::StartGame)
+	if (packet.Type == PacketType::StartGame)
 	{
 		Game::SetState(GameState::GAME);
 	}
-	else if (packet.type == PacketType::LobbyInformation)
+	else if (packet.Type == PacketType::LobbyInformation)
 	{
 		const auto& lobby = Game::GetLobby();
 

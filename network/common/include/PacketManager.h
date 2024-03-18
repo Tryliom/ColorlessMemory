@@ -15,4 +15,12 @@ namespace PacketManager
 	Packet* ReceivePacket(sf::TcpSocket& socket);
 
 	sf::Packet* CreatePacket(Packet* packet);
+
+	//TODO: Use only funcs: sf::Packet* FromPacket(Packet* packet); and Packet* ToPacket(sf::Packet* packet);
+
+	/**
+	 * @brief Register a new packet type
+	 * @param packet The packet to register
+	 */
+	void RegisterPacketType(Packet* packet);
 }

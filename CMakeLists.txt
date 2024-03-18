@@ -91,10 +91,12 @@ target_include_directories(NetworkServer PUBLIC network/server/src/)
 target_link_libraries(NetworkServer PUBLIC NetworkCommon)
 
 # Linking
+target_link_libraries(Common PUBLIC NetworkCommon)
+
 target_link_libraries(ClientPart PUBLIC NetworkClient)
 target_link_libraries(ServerPart PUBLIC NetworkServer)
 
-target_link_libraries(client PRIVATE ClientPart)
-target_link_libraries(server PRIVATE ServerPart)
+target_link_libraries(client PUBLIC ClientPart)
+target_link_libraries(server PUBLIC ServerPart)
 
 add_dependencies(client data_target)

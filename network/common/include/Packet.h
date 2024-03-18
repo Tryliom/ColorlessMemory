@@ -1,114 +1,52 @@
 #pragma once
 
-#include "DeckType.h"
-
 #include <SFML/Network.hpp>
 
 #include <utility>
 
-enum class PacketType
+enum class PacketType : char
 {
-	LobbyInformation,
-	ChangeDeck,
-	JoinLobby,
-	LeaveLobby,
-	StartGame,
-	Turn,
-	CardInformation,
-	LeaveGame,
-	Invalid // Always last
+	Invalid,
+	COUNT // Always last
 };
-
-std::string PacketTypeToString(PacketType type);
 
 // Packet attributes always need to be initialized to default values
 
-struct Packet
+class Packet
 {
+public:
 	Packet() = default;
-	explicit Packet(PacketType type) : type(type) {}
+	explicit Packet(char type) : Type(type) {}
 	virtual ~Packet() = default;
 
-	PacketType type = PacketType::Invalid;
+	/**
+	 * @brief Type of the packet, used to determine which packet to create from a received packet
+	 */
+	char Type = static_cast<char>(PacketType::Invalid);
 
-	static Packet* FromType(PacketType type);
+	[[nodiscard]] virtual Packet* Clone() const = 0;
+	[[nodiscard]] virtual std::string ToString() const = 0;
+	/**
+	 * @brief Write the packet to a sf::Packet, type is already written first
+	 * @param packet sf::Packet to write to
+	 */
+	virtual void Write(sf::Packet& packet) const = 0;
+	/**
+	 * @brief Read the packet from a sf::Packet, type is already read first
+	 * @param packet sf::Packet to read from
+	 */
+	virtual void Read(sf::Packet& packet) = 0;
 };
 
-struct LobbyInformationPacket final : Packet
+class InvalidPacket final : public Packet
 {
-	LobbyInformationPacket() : Packet(PacketType::LobbyInformation) {}
-	LobbyInformationPacket(bool isHost, bool waitingForOpponent, std::string player1Name, std::string player2Name, short player1Icon,
-		short player2Icon, DeckType deckType)
-		: Packet(PacketType::LobbyInformation), IsHost(isHost), WaitingForOpponent(waitingForOpponent), Player1Name(std::move(player1Name)),
-		  Player2Name(std::move(player2Name)), Player1Icon(player1Icon), Player2Icon(player2Icon), ChosenDeckType(deckType) {}
+public:
+	InvalidPacket() = default;
 
-	//TODO: Make PlayerName class with std::array<char, 10> Name to optimize memory usage
-	std::string Player1Name{};
-	std::string Player2Name{};
-	//TODO: Make icon into an enum
-	short Player1Icon{};
-	short Player2Icon{};
-	DeckType ChosenDeckType {};
-	bool IsHost{};
-	bool WaitingForOpponent{};
-};
-
-struct ChangeDeckPacket final : Packet
-{
-	ChangeDeckPacket() : Packet(PacketType::ChangeDeck) {}
-	explicit ChangeDeckPacket(DeckType deckType) : Packet(PacketType::ChangeDeck), ChosenDeckType(deckType) {}
-
-	DeckType ChosenDeckType{};
-};
-
-struct JoinLobbyPacket final : Packet
-{
-	JoinLobbyPacket() : Packet(PacketType::JoinLobby) {}
-	explicit JoinLobbyPacket(std::string name, short iconIndex) : Packet(PacketType::JoinLobby), Name(std::move(name)), IconIndex(iconIndex) {}
-
-	std::string Name;
-	short IconIndex{};
-};
-
-struct LeaveLobbyPacket final : Packet
-{
-	LeaveLobbyPacket() : Packet(PacketType::LeaveLobby) {}
-};
-
-struct StartGamePacket final : Packet
-{
-	StartGamePacket() : Packet(PacketType::StartGame) {}
-	explicit StartGamePacket(DeckType deckType, bool yourTurn) : Packet(PacketType::StartGame), ChosenDeckType(deckType), YourTurn(yourTurn) {}
-
-	DeckType ChosenDeckType{};
-	bool YourTurn{};
-};
-
-struct TurnPacket final : Packet
-{
-	TurnPacket() : Packet(PacketType::Turn) {}
-	explicit TurnPacket(bool yourTurn) : Packet(PacketType::Turn), YourTurn(yourTurn) {}
-
-	bool YourTurn{};
-};
-
-struct CardInformationPacket final : Packet
-{
-	CardInformationPacket() : Packet(PacketType::CardInformation) {}
-	explicit CardInformationPacket(short cardIndex, short iconIndex) : Packet(PacketType::CardInformation), CardIndex(cardIndex), IconIndex(iconIndex) {}
-
-	short CardIndex{};
-	short IconIndex{};
-};
-
-struct LeaveGamePacket final : Packet
-{
-	LeaveGamePacket() : Packet(PacketType::LeaveGame) {}
-};
-
-struct InvalidPacket final : Packet
-{
-	InvalidPacket() : Packet(PacketType::Invalid) {}
+	[[nodiscard]] Packet* Clone() const override { return new InvalidPacket(); }
+	[[nodiscard]] std::string ToString() const override { return "InvalidPacket"; }
+	void Write(sf::Packet& packet) const override {}
+	void Read(sf::Packet& packet) override {}
 };
 
 sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket);

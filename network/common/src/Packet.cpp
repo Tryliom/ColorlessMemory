@@ -1,42 +1,12 @@
-#include "../include/Packet.h"
-
-std::string PacketTypeToString(PacketType type)
-{
-	switch (type)
-	{
-	case PacketType::LobbyInformation: return "LobbyInformation";
-	case PacketType::ChangeDeck: return "ChangeDeck";
-	case PacketType::JoinLobby: return "JoinLobby";
-	case PacketType::LeaveLobby: return "LeaveLobby";
-	case PacketType::StartGame: return "StartGame";
-	case PacketType::Turn: return "Turn";
-	case PacketType::CardInformation: return "CardInformation";
-	case PacketType::LeaveGame: return "LeaveGame";
-	default: return "Invalid";
-	}
-}
-
-Packet* Packet::FromType(PacketType type)
-{
-	switch (type)
-	{
-	case PacketType::LobbyInformation: return new LobbyInformationPacket();
-	case PacketType::ChangeDeck: return new ChangeDeckPacket();
-	case PacketType::JoinLobby: return new JoinLobbyPacket();
-	case PacketType::LeaveLobby: return new LeaveLobbyPacket();
-	case PacketType::StartGame: return new StartGamePacket();
-	case PacketType::Turn: return new TurnPacket();
-	case PacketType::CardInformation: return new CardInformationPacket();
-	case PacketType::LeaveGame: return new LeaveGamePacket();
-	default: return new InvalidPacket();
-	}
-}
+#include "Packet.h"
 
 sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket)
 {
-	packet << static_cast<sf::Uint8>(myPacket.type);
+	packet << myPacket.Type;
 
-	switch (myPacket.type)
+	myPacket.Write(packet);
+
+	switch (myPacket.Type)
 	{
 	case PacketType::LobbyInformation:
 	{
@@ -72,7 +42,7 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket)
 	case PacketType::CardInformation:
 	{
 		const auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(myPacket);
-		packet << cardInformationPacket.CardIndex << cardInformationPacket.IconIndex;
+		packet << cardInformationPacket.CardIndexInDeck << cardInformationPacket.IconIndex;
 		break;
 	}
 	case PacketType::LeaveLobby:
@@ -89,7 +59,9 @@ sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket)
 
 sf::Packet& operator >>(sf::Packet& packet, Packet& myPacket)
 {
-	switch (myPacket.type)
+	myPacket.Read(packet);
+
+	switch (myPacket.Type)
 	{
 	case PacketType::LobbyInformation:
 	{
@@ -132,7 +104,7 @@ sf::Packet& operator >>(sf::Packet& packet, Packet& myPacket)
 	case PacketType::CardInformation:
 	{
 		auto* cardInformationPacket = dynamic_cast<CardInformationPacket*>(&myPacket);
-		packet >> cardInformationPacket->CardIndex >> cardInformationPacket->IconIndex;
+		packet >> cardInformationPacket->CardIndexInDeck >> cardInformationPacket->IconIndex;
 		break;
 	}
 	case PacketType::LeaveLobby:

@@ -260,15 +260,15 @@ void GameGui::OnUpdate(sf::Time elapsed)
 
 void GameGui::OnPacketReceived(const Packet& packet)
 {
-	if (packet.type == PacketType::CardInformation)
+	if (packet.Type == PacketType::CardInformation)
 	{
 		auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packet);
 
-		_playCards[cardInformationPacket.CardIndex].SetIndex(cardInformationPacket.IconIndex);
+		_playCards[cardInformationPacket.CardIndexInDeck].SetIndex(cardInformationPacket.IconIndex);
 
-		SelectCard(cardInformationPacket.CardIndex);
+		SelectCard(cardInformationPacket.CardIndexInDeck);
 	}
-	else if (packet.type == PacketType::LeaveGame)
+	else if (packet.Type == PacketType::LeaveGame)
 	{
 		_gameOver = true;
 

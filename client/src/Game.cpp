@@ -69,7 +69,7 @@ namespace Game
 
 	void OnPacketReceived(const Packet& packet)
 	{
-		if (packet.type == PacketType::LobbyInformation)
+		if (packet.Type == PacketType::LobbyInformation)
 		{
 			auto& joinLobbyPacket = dynamic_cast<const LobbyInformationPacket&>(packet);
 
@@ -80,7 +80,7 @@ namespace Game
 			_lobby.Player2.Name = joinLobbyPacket.Player2Name;
 			_lobby.Player2.IconIndex = joinLobbyPacket.Player2Icon;
 		}
-		else if (packet.type == PacketType::StartGame)
+		else if (packet.Type == PacketType::StartGame)
 		{
 			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
 
@@ -88,7 +88,7 @@ namespace Game
 			_game.Reset(_lobby);
 			_game.YourTurn = startGamePacket.YourTurn;
 		}
-		else if (packet.type == PacketType::Turn)
+		else if (packet.Type == PacketType::Turn)
 		{
 			auto& turnPacket = dynamic_cast<const TurnPacket&>(packet);
 
@@ -112,7 +112,7 @@ namespace Game
 		{
 			OnPacketReceived(*packet);
 
-			auto packetTypeValue = static_cast<int>(packet->type);
+			auto packetTypeValue = static_cast<int>(packet->Type);
 
 			if (packetTypeValue >= 0 && packetTypeValue <= static_cast<int>(PacketType::Invalid))
 			{
