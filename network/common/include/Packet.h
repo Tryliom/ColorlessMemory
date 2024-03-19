@@ -11,7 +11,6 @@ enum class PacketType : char
 };
 
 // Packet attributes always need to be initialized to default values
-
 class Packet
 {
 public:

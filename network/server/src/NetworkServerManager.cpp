@@ -74,7 +74,7 @@ void NetworkServerManager::ReceivePacketFromClient(std::size_t clientIndex)
 		// Receive a message from the client
 		Packet* packet = PacketManager::ReceivePacket(*socket);
 
-		if (packet->Type == PacketType::Invalid) break;
+		if (packet->Type == static_cast<char>(PacketType::Invalid)) break;
 		if (_onPacketReceived) _onPacketReceived(socket, packet);
 
 		delete packet;

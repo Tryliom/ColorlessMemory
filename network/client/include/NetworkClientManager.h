@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Client.h"
-#include "../../common/include/Packet.h"
+#include "Packet.h"
 
 #include <functional>
 
