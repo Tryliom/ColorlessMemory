@@ -4,7 +4,7 @@
 
 PlayerUi::PlayerUi(bool isPlayer1, sf::Vector2f position, bool displayScore)
 {
-	const auto& defaultIcon = &AssetManager::GetCardIcon(0);
+	const auto& defaultIcon = &AssetManager::GetCardIcon(DEFAULT_ICON_INDEX);
 	const auto& player1Icon = &AssetManager::GetTexture(TextureType::PLAYER1_ICON_BACKGROUND);
 	const auto& player2Icon = &AssetManager::GetTexture(TextureType::PLAYER2_ICON_BACKGROUND);
 	const auto& iconSize = defaultIcon->getSize();
@@ -95,7 +95,7 @@ void PlayerUi::SetScore(int score)
 	);
 }
 
-void PlayerUi::SetIcon(std::size_t iconIndex)
+void PlayerUi::SetIcon(CardIconIndex iconIndex)
 {
 	_playerIcon.setTexture(&AssetManager::GetCardIcon(iconIndex));
 	_playerIconShadow.setTexture(&AssetManager::GetCardIcon(iconIndex));

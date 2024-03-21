@@ -3,13 +3,14 @@
 #include "Constants.h"
 #include "PlayerName.h"
 #include "Packet.h"
+#include "MyPackets/JoinLobbyPacket.h"
 
 #include <string>
 
 struct PlayerData
 {
 	PlayerName Name;
-	std::size_t IconIndex = 20;
+	IconType IconIndex{};
 };
 
 struct Lobby
@@ -55,6 +56,8 @@ class GameManager
 
 	void SetUsername(const std::string& username);
 	void JoinLobby();
+
+	[[nodiscard]] MyPackets::JoinLobbyPacket* ToJoinLobbyPacket() const;
 
 	[[nodiscard]] const PlayerData& GetPlayer() const;
 	[[nodiscard]] const Lobby& GetLobby() const;

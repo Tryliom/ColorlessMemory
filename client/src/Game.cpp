@@ -1,9 +1,6 @@
 #include "Game.h"
 
 #include "MyPackets.h"
-#include "MyPackets/LobbyInformationPacket.h"
-
-#include "Logger.h"
 
 #include "AssetManager.h"
 #include "gui/guis/MenuGui.h"
@@ -12,9 +9,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include <cstdlib>
-
-Game::Game(GameManager& gameManager) : _gameManager(gameManager)
+Game::Game(GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, int width, int height) :
+	_gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
 {
 	SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
 	SetState(GameState::MAIN_MENU);
@@ -34,6 +30,19 @@ void Game::Update(sf::Time elapsed)
 	{
 		_gui->Update(elapsed);
 	}
+
+	while (Packet* packet = _networkManager.PopPacket())
+	{
+		_gameManager.OnPacketReceived(*packet);
+		OnPacketReceived(*packet);
+
+		auto packetTypeValue = packet->Type;
+
+		if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
+		{
+			delete packet;
+		}
+	}
 }
 
 void Game::SetState(GameState state)
@@ -51,13 +60,12 @@ void Game::SetState(GameState state)
 	{
 		_gui = new LobbyGui();
 		_gameManager.JoinLobby();
-		//TODO: Add network interface for this
-		SendPacket(new JoinLobbyPacket(_player.Name, _player.IconIndex));
+		_networkManager.SendPacket(_gameManager.ToJoinLobbyPacket());
 	}
 
 	if (state == GameState::GAME)
 	{
-		_gui = new GameGui();
+		_gui = new GameGui(*this, _gameManager, _width, _height);
 	}
 
 	_state = state;
@@ -72,6 +80,11 @@ void Game::Draw(sf::RenderTarget& target)
 	{
 		target.draw(*_gui);
 	}
+}
+
+void Game::SendPacket(Packet* packet)
+{
+	_networkManager.SendPacket(packet);
 }
 
 void Game::OnPacketReceived(Packet& packet)

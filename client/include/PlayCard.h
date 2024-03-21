@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DeckType.h"
+#include "Constants.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -9,7 +9,7 @@
 class PlayCard : public sf::Drawable
 {
  private:
-	int _index;
+	CardIconIndex _index;
 	sf::Vector2f _position;
 	sf::Vector2f _scale = {1, 1};
 	sf::Color _color = sf::Color(200, 200, 200, 255);
@@ -30,12 +30,12 @@ class PlayCard : public sf::Drawable
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
  public:
-	PlayCard(DeckType type, int index);
+	PlayCard(DeckType type, CardIconIndex index);
 
 	void Update(sf::Time elapsed);
 	void OnHover(bool hover);
 
-	void SetIndex(int index);
+	void SetIndex(CardIconIndex index);
 	void SetOnClicked(std::function<void()> onClicked);
 	void SetPosition(sf::Vector2f position);
 	void SetScale(float scale);
@@ -44,7 +44,7 @@ class PlayCard : public sf::Drawable
 	void Click();
 	void Disable();
 
-	int GetIconIndex() const;
+	CardIconIndex GetIconIndex() const;
 	bool IsHover() const;
 	bool IsRevealed() const;
 	bool IsFlipping() const;

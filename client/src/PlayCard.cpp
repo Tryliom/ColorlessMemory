@@ -4,14 +4,14 @@
 
 #include <utility>
 
-PlayCard::PlayCard(DeckType type, int index)
+PlayCard::PlayCard(DeckType type, CardIconIndex index)
 {
 	_index = index;
 	_hiddenCardTexture = AssetManager::GetCardTexture(type, false);
 	_cardTexture = AssetManager::GetCardTexture(type, true);
 	_revealTime = 0;
 
-	if (index != -1) _iconTexture = AssetManager::GetCardIcon(index);
+	if (index != UNKNOWN_ICON_INDEX) _iconTexture = AssetManager::GetCardIcon(index);
 }
 
 void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -69,7 +69,7 @@ void PlayCard::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		}
 	}
 
-	bool displayIcon = _index != -1;
+	bool displayIcon = _index != UNKNOWN_ICON_INDEX;
 	bool inAnimation = _revealTime > 0.f;
 	float percentage = 1.f - _revealTime / _revealDuration;
 
@@ -137,7 +137,7 @@ void PlayCard::OnHover(bool hover)
 	}
 }
 
-void PlayCard::SetIndex(int index)
+void PlayCard::SetIndex(CardIconIndex index)
 {
 	_index = index;
 	_iconTexture = AssetManager::GetCardIcon(index);
@@ -201,7 +201,8 @@ sf::FloatRect PlayCard::GetGlobalBounds() const
 
 	return sprite.getGlobalBounds();
 }
-int PlayCard::GetIconIndex() const
+
+CardIconIndex PlayCard::GetIconIndex() const
 {
 	return _index;
 }

@@ -1,13 +1,16 @@
 #include "gui/guis/GameGui.h"
 
 #include "Game.h"
+#include "GameManager.h"
 #include "AssetManager.h"
 #include "Constants.h"
+#include "MyPackets/LeaveGamePacket.h"
 
-GameGui::GameGui()
+GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height) :
+	_game(game), _gameManager(gameManager), _height(height), _width(width)
 {
 	// Setup cards
-	auto& gameData = Game::GetGame();
+	const auto& gameData = _gameManager.GetGame();
 
 	switch (gameData.DeckType)
 	{
@@ -36,28 +39,29 @@ GameGui::GameGui()
 	// Create play cards
 
 	// Max size for cards
-	const auto& maxWidth = Game::WIDTH - 600.f;
-	const auto& maxHeight = Game::HEIGHT - 200.f;
+	//TODO: Change this to be dynamic
+	const auto& maxWidth = _width - 600.f;
+	const auto& maxHeight = _height - 200.f;
 
 	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(0).getSize());
 	auto xOffset = 20.f;
 	auto yOffset = 20.f;
-	auto width = cardSize.x * _xCards + xOffset * (_xCards - 1);
-	auto height = cardSize.y * _yCards + yOffset * (_yCards - 1);
+	auto gameAreaWidth = cardSize.x * _xCards + xOffset * (_xCards - 1);
+	auto gameAreaHeight = cardSize.y * _yCards + yOffset * (_yCards - 1);
 
 	// Calculate scale to fit the cards in the screen
-	auto scale = std::min(maxWidth / width, maxHeight / height);
+	auto scale = std::min(maxWidth / gameAreaWidth, maxHeight / gameAreaHeight);
 
 	if (scale > 1.f) scale = 1.f;
 
 	cardSize *= scale;
 	xOffset *= scale;
 	yOffset *= scale;
-	width = cardSize.x * _xCards + xOffset * (_xCards - 1);
-	height = cardSize.y * _yCards + yOffset * (_yCards - 1);
+	gameAreaWidth = cardSize.x * _xCards + xOffset * (_xCards - 1);
+	gameAreaHeight = cardSize.y * _yCards + yOffset * (_yCards - 1);
 
-	auto startX = (Game::WIDTH - width) / 2.f;
-	auto startY = (Game::HEIGHT - height) / 2.f;
+	auto startX = (_width - gameAreaWidth) / 2.f;
+	auto startY = (_height - gameAreaHeight) / 2.f;
 
 	if (scale < 1.f)
 	{
@@ -69,7 +73,7 @@ GameGui::GameGui()
 		const auto& x = i % _xCards;
 		const auto& y = i / _xCards;
 
-		_playCards.emplace_back(gameData.DeckType, -1);
+		_playCards.emplace_back(gameData.DeckType, UNKNOWN_ICON_INDEX);
 		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset), startY + y * (cardSize.y + yOffset) });
 		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
 		_playCards.back().SetScale(scale);
@@ -77,7 +81,7 @@ GameGui::GameGui()
 
 	// Create texts
 	auto title = Text(
-			sf::Vector2f(Game::WIDTH / 2.f, 100.f),
+			sf::Vector2f(_width / 2.f, 100.f),
 			{
 					TextLine({ CustomText{ .Text = "Game", .Size = 50 }})
 			}
@@ -86,20 +90,20 @@ GameGui::GameGui()
 	_texts.emplace_back(title);
 
 	// Create player icons
-	const auto& lobby = Game::GetLobby();
-	const auto& player1Position = sf::Vector2f(50, Game::HEIGHT / 2.f - 200.f);
-	const auto& player2Position = sf::Vector2f(Game::WIDTH - 50, Game::HEIGHT / 2.f - 200.f);
+	const auto& lobby = _gameManager.GetLobby();
+	const auto& player1Position = sf::Vector2f(50, _height / 2.f - 200.f);
+	const auto& player2Position = sf::Vector2f(_width - 50, _height / 2.f - 200.f);
 
 	_player1 = PlayerUi(true, player1Position, true);
 	_player2 = PlayerUi(false, player2Position, true);
 
 	// Set player names
-	_player1.SetName(lobby.Player1.Name);
-	_player2.SetName(lobby.Player2.Name);
+	_player1.SetName(lobby.Player1.Name.AsString());
+	_player2.SetName(lobby.Player2.Name.AsString());
 
 	// Set player icons
-	_player1.SetIcon(lobby.Player1.IconIndex);
-	_player2.SetIcon(lobby.Player2.IconIndex);
+	_player1.SetIcon({ static_cast<char>(START_PLAYER_ICON_INDEX.Index + static_cast<char>(lobby.Player1.IconIndex)) });
+	_player2.SetIcon({ static_cast<char>(START_PLAYER_ICON_INDEX.Index + static_cast<char>(lobby.Player2.IconIndex)) });
 
 	// Set player scores
 	_player1.SetScore(0);
@@ -110,7 +114,7 @@ GameGui::GameGui()
 
 	// Create turn text
 	auto turn = Text(
-			sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+			sf::Vector2f(_width / 2.f, 150.f),
 			{
 					TextLine({ CustomText{ .Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30 }})
 			}
@@ -119,7 +123,7 @@ GameGui::GameGui()
 	_texts.emplace_back(turn);
 
 	auto leaveButton = Button(
-			sf::Vector2f(Game::WIDTH / 2.f, Game::HEIGHT - 100.f),
+			sf::Vector2f(_width / 2.f, _height - 100.f),
 			sf::Vector2f(200.f, 50.f),
 			true
 	);
@@ -127,10 +131,10 @@ GameGui::GameGui()
 	leaveButton.SetText({
 			TextLine({ CustomText{ .Text = "LEAVE", .Style = sf::Text::Style::Bold, .Size = 30 }})
 	});
-	leaveButton.SetOnClick([]()
+	leaveButton.SetOnClick([this]()
 	{
-		Game::SendPacket(new LeaveGamePacket());
-		Game::SetState(GameState::MAIN_MENU);
+		_game.SendPacket(new MyPackets::LeaveGamePacket());
+		_game.SetState(GameState::MAIN_MENU);
 	});
 
 	_buttons.emplace_back(leaveButton);
@@ -176,8 +180,9 @@ void GameGui::OnCheckInputs(sf::Event event)
 
 void GameGui::OnUpdate(sf::Time elapsed)
 {
+	//TODO: Send it with OnUpdate
 	const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(Game::GetWindow()));
-	auto& gameData = Game::GetGame();
+	auto& gameData = _gameManager.GetGame();
 
 	for (auto& card: _playCards)
 	{
@@ -244,7 +249,7 @@ void GameGui::OnUpdate(sf::Time elapsed)
 				_gameOver = true;
 
 				_texts[1] = Text(
-						sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+						sf::Vector2f(_width / 2.f, 150.f),
 						{
 								TextLine({ CustomText{ .Text = player1Win == isPlayer1 ? "You win" : "You lose", .Size = 30 }})
 						}
@@ -273,7 +278,7 @@ void GameGui::OnPacketReceived(const Packet& packet)
 		_gameOver = true;
 
 		_texts[1] = Text(
-				sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+				sf::Vector2f(_width / 2.f, 150.f),
 				{
 						TextLine({ CustomText{ .Text = "Other player leave", .Size = 30 }})
 				}
@@ -348,7 +353,7 @@ void GameGui::StartTurn()
 	if (_gameOver) return;
 
 	_texts[1] = Text(
-			sf::Vector2f(Game::WIDTH / 2.f, 150.f),
+			sf::Vector2f(_width / 2.f, 150.f),
 			{
 					TextLine({ CustomText{ .Text = _yourTurn ? "Your turn" : "Opponent's turn", .Size = 30 }})
 			}

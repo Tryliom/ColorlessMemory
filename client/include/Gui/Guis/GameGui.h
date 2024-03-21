@@ -4,10 +4,19 @@
 #include "PlayCard.h"
 #include "PlayerUi.h"
 
+class Game;
+class GameManager;
+
 class GameGui final :
 	public Gui
 {
  private:
+	Game& _game;
+	GameManager& _gameManager;
+
+	float _height = 0;
+	float _width = 0;
+
 	std::vector<PlayCard> _playCards;
 	std::size_t _xCards = 0;
 	std::size_t _yCards = 0;
@@ -31,7 +40,7 @@ class GameGui final :
 	void StartTurn();
 
  public:
-	explicit GameGui();
+	explicit GameGui(Game& game, GameManager& gameManager, float width, float height);
 
 	void OnUpdate(sf::Time elapsed) override;
 	void OnPacketReceived(const Packet& packet) override;

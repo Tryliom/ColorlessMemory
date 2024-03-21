@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DeckType.h"
+#include "Constants.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -22,5 +22,5 @@ namespace AssetManager
 	sf::Font& GetMainFont();
 	sf::Texture& GetTexture(TextureType type);
 	sf::Texture& GetCardTexture(DeckType type, bool isRevealed = false);
-	sf::Texture& GetCardIcon(std::size_t index);
+	sf::Texture& GetCardIcon(CardIconIndex index);
 }

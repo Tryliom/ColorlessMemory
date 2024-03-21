@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/Text.h"
+#include "Constants.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -26,5 +27,5 @@ class PlayerUi :
 
 	void SetName(const std::string& name);
 	void SetScore(int score);
-	void SetIcon(std::size_t iconIndex);
+	void SetIcon(CardIconIndex iconIndex);
 };

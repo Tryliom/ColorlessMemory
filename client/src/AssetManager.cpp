@@ -45,8 +45,8 @@ namespace AssetManager
 		return cardTextures[static_cast<int>(type) * 2 + (isRevealed ? 1 : 0)];
 	}
 
-	sf::Texture& GetCardIcon(const std::size_t index)
+	sf::Texture& GetCardIcon(const CardIconIndex index)
 	{
-		return cardIcons[index];
+		return cardIcons[static_cast<char>(index.Index)];
 	}
 }

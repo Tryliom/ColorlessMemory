@@ -22,7 +22,7 @@ int main()
 	_window.setVerticalSyncEnabled(true);
 
 	GameManager _gameManager;
-	Game _game(_gameManager);
+	Game _game(_gameManager, _networkClientManager);
 
 	//TODO: Ask for username and save it to file
 	// Get player name
@@ -47,19 +47,6 @@ int main()
 			}
 
 			_game.CheckInputs(event);
-		}
-
-		while (Packet* packet = _networkClientManager.PopPacket())
-		{
-			_gameManager.OnPacketReceived(*packet);
-			_game.OnPacketReceived(*packet);
-
-			auto packetTypeValue = packet->Type;
-
-			if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
-			{
-				delete packet;
-			}
 		}
 
 		sf::Time elapsed = clock.restart();

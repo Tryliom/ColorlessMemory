@@ -5,6 +5,8 @@
 #include "Gui/Gui.h"
 #include "GameManager.h"
 
+#include "ClientNetworkInterface.h"
+
 #include <SFML/Graphics.hpp>
 
 #include <array>
@@ -20,14 +22,14 @@ enum class GameState
 class Game
 {
  public:
-	explicit Game(GameManager& gameManager);
+	explicit Game(GameManager& gameManager, ClientNetworkInterface& networkManager, int width, int height);
 
 	void CheckInputs(const sf::Event& event);
 	void Update(sf::Time elapsed);
 	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
+
 	void SendPacket(Packet* packet);
-	void OnPacketReceived(Packet& packet);
 
  private:
 	// Gui
@@ -37,6 +39,12 @@ class Game
 
 	// Game
 	GameManager& _gameManager;
+	ClientNetworkInterface& _networkManager;
+
+	int _width = 0;
+	int _height = 0;
 
 	void SetBackground(const sf::Texture& texture);
+
+	void OnPacketReceived(Packet& packet);
 };

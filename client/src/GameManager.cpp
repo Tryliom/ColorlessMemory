@@ -1,6 +1,8 @@
 #include "GameManager.h"
 #include "MyPackets.h"
 #include "MyPackets/LobbyInformationPacket.h"
+#include "MyPackets/StartGamePacket.h"
+#include "MyPackets/TurnPacket.h"
 
 void GameManager::OnPacketReceived(Packet& packet)
 {
@@ -17,7 +19,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{
-		auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
+		auto startGamePacket = *packet.as<MyPackets::StartGamePacket>();
 
 		_lobby.DeckType = startGamePacket.ChosenDeckType;
 		_game.Reset(_lobby);
@@ -25,7 +27,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::Turn))
 	{
-		auto& turnPacket = dynamic_cast<const TurnPacket&>(packet);
+		auto turnPacket = *packet.as<MyPackets::TurnPacket>();
 
 		_game.YourTurn = turnPacket.YourTurn;
 	}
@@ -40,6 +42,11 @@ void GameManager::JoinLobby()
 {
 	_lobby.IsHost = true;
 	_lobby.WaitingForOpponent = true;
+}
+
+MyPackets::JoinLobbyPacket* GameManager::ToJoinLobbyPacket() const
+{
+	return new MyPackets::JoinLobbyPacket(_player.Name.AsString(), _player.IconIndex);
 }
 
 const PlayerData& GameManager::GetPlayer() const
