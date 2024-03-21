@@ -56,10 +56,11 @@ namespace Game
 	inline static float WIDTH = 1920.f;
 
 	void Initialize();
-	int StartLoop();
-	sf::RenderWindow& GetWindow();
+	void CheckInputs(const sf::Event& event);
+	void Update(sf::Time elapsed);
 	void SetState(GameState state);
 	void Exit();
+	void Render(sf::RenderTarget& target);
 
 	void SendPacket(Packet* packet);
 

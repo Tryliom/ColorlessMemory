@@ -21,9 +21,6 @@ namespace Game
 	Client _client;
 	NetworkClientManager _networkClientManager;
 
-	// Game display and physics
-	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(Game::WIDTH, Game::HEIGHT), "Colorless Memory", sf::Style::Default));
-
 	// Gui
 	Gui* _gui { nullptr };
 	GameState _state = GameState::NONE;
@@ -123,31 +120,21 @@ namespace Game
 
 	void CheckInputs(sf::Event event)
 	{
-		if (event.type == sf::Event::Closed)
-		{
-			_window.close();
-			return;
-		}
-
 		if (_gui != nullptr)
 		{
 			_gui->CheckInputs(event);
 		}
 	}
 
-	void Render()
+	void Render(sf::RenderTarget& target)
 	{
-		_window.clear();
-
 		// Render background
-		_window.draw(_background);
+		target.draw(_background);
 
 		if (_gui != nullptr)
 		{
-			_window.draw(*_gui);
+			target.draw(*_gui);
 		}
-
-		_window.display();
 	}
 
 	void SetBackground(const sf::Texture& texture)
@@ -156,31 +143,6 @@ namespace Game
 		_background.setSize(sf::Vector2f(texture.getSize()));
 		_background.setPosition(0, 0);
 	}
-
-	int StartLoop()
-	{
-		sf::Clock clock;
-
-		while (_window.isOpen())
-		{
-			sf::Event event{};
-
-			while (_window.pollEvent(event))
-			{
-				CheckInputs(event);
-			}
-
-			Update(clock.restart());
-			Render();
-		}
-
-		_client.socket->disconnect();
-		_networkClientManager.Stop();
-
-		return EXIT_SUCCESS;
-	}
-
-	sf::RenderWindow& GetWindow() { return _window; }
 
 	void SetState(GameState state)
 	{
@@ -207,11 +169,6 @@ namespace Game
 		}
 
 		_state = state;
-	}
-
-	void Exit()
-	{
-		_window.close();
 	}
 
 	void SendPacket(Packet* packet)
