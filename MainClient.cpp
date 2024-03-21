@@ -1,14 +1,36 @@
 #include "AssetManager.h"
 #include "Game.h"
 #include "MyPackets.h"
+#include "NetworkClientManager.h"
+#include "Logger.h"
+#include "GameManager.h"
+
+inline static float HEIGHT = 1080.f;
+inline static float WIDTH = 1920.f;
 
 int main()
 {
 	MyPackets::RegisterMyPackets();
 	AssetManager::Initialize();
-	Game::Initialize();
 
-	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(Game::WIDTH, Game::HEIGHT), "Colorless Memory", sf::Style::Default));
+	// Network
+	NetworkClientManager _networkClientManager(HOST_NAME, PORT);
+
+	// Set the size of the game
+	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(WIDTH, HEIGHT), "Colorless Memory", sf::Style::Default));
+
+	_window.setVerticalSyncEnabled(true);
+
+	GameManager _gameManager;
+	Game _game(_gameManager);
+
+	//TODO: Ask for username and save it to file
+	// Get player name
+	std::string username = std::getenv("USERNAME") ? std::getenv("USERNAME") : "default";
+	if (!username.empty()) {
+		username[0] = std::toupper(username[0]);
+	}
+	_gameManager.SetUsername(username);
 
 	sf::Clock clock;
 
@@ -24,19 +46,33 @@ int main()
 				break;
 			}
 
-			Game::CheckInputs(event);
+			_game.CheckInputs(event);
 		}
 
-		Game::Update(clock.restart());
+		while (Packet* packet = _networkClientManager.PopPacket())
+		{
+			_gameManager.OnPacketReceived(*packet);
+			_game.OnPacketReceived(*packet);
+
+			auto packetTypeValue = packet->Type;
+
+			if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
+			{
+				delete packet;
+			}
+		}
+
+		sf::Time elapsed = clock.restart();
+
+		_game.Update(elapsed);
 
 		_window.clear();
 
-		Game::Render(_window);
+		_game.Draw(_window);
 
 		_window.display();
 	}
 
-	_client.socket->disconnect();
 	_networkClientManager.Stop();
 
 	return EXIT_SUCCESS;

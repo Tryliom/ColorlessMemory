@@ -1,7 +1,8 @@
 #include "Game.h"
 
-#include "NetworkClientManager.h"
-#include "PacketManager.h"
+#include "MyPackets.h"
+#include "MyPackets/LobbyInformationPacket.h"
+
 #include "Logger.h"
 
 #include "AssetManager.h"
@@ -13,181 +14,77 @@
 
 #include <cstdlib>
 
-//TODO: Convert into a class
-//TODO: Use a render target instead of a window
-namespace Game
+Game::Game(GameManager& gameManager) : _gameManager(gameManager)
 {
-	// Network
-	Client _client;
-	NetworkClientManager _networkClientManager;
+	SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
+	SetState(GameState::MAIN_MENU);
+}
 
-	// Gui
-	Gui* _gui { nullptr };
-	GameState _state = GameState::NONE;
-	sf::RectangleShape _background;
-
-	// Game data
-	PlayerData _player;
-	Lobby _lobby;
-	GameData _game;
-
-	void OnPacketReceived(const Packet& packet);
-	void SetBackground(const sf::Texture& texture);
-
-	void Initialize()
+void Game::CheckInputs(const sf::Event& event)
+{
+	if (_gui != nullptr)
 	{
-		_window.setVerticalSyncEnabled(true);
+		_gui->CheckInputs(event);
+	}
+}
 
-		// Set the size of the game
-		Game::HEIGHT = static_cast<float>(_window.getSize().y);
-		Game::WIDTH = static_cast<float>(_window.getSize().x);
+void Game::Update(sf::Time elapsed)
+{
+	if (_gui != nullptr)
+	{
+		_gui->Update(elapsed);
+	}
+}
 
-		SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
-		SetState(GameState::MAIN_MENU);
+void Game::SetState(GameState state)
+{
+	if (_state == state) return;
 
-		// Network
-		sf::Socket::Status status = _client.socket->connect(HOST_NAME, PORT);
+	delete _gui;
 
-		if (status != sf::Socket::Done)
-		{
-			LOG_ERROR("Could not connect to server");
-			_window.close();
-		}
-
-		// Get player name
-		std::string username = std::getenv("USERNAME") ? std::getenv("USERNAME") : "default";
-		if (!username.empty()) {
-			username[0] = std::toupper(username[0]);
-		}
-		_player.Name = username;
-
-		_networkClientManager.StartThreads(_client);
+	if (state == GameState::MAIN_MENU)
+	{
+		_gui = new MenuGui();
 	}
 
-	void OnPacketReceived(const Packet& packet)
+	if (state == GameState::LOBBY)
 	{
-		if (packet.Type == PacketType::LobbyInformation)
-		{
-			auto& joinLobbyPacket = dynamic_cast<const LobbyInformationPacket&>(packet);
-
-			_lobby.IsHost = joinLobbyPacket.IsHost;
-			_lobby.WaitingForOpponent = joinLobbyPacket.WaitingForOpponent;
-			_lobby.Player1.Name = joinLobbyPacket.Player1Name;
-			_lobby.Player1.IconIndex = joinLobbyPacket.Player1Icon;
-			_lobby.Player2.Name = joinLobbyPacket.Player2Name;
-			_lobby.Player2.IconIndex = joinLobbyPacket.Player2Icon;
-		}
-		else if (packet.Type == PacketType::StartGame)
-		{
-			auto& startGamePacket = dynamic_cast<const StartGamePacket&>(packet);
-
-			_lobby.DeckType = startGamePacket.ChosenDeckType;
-			_game.Reset(_lobby);
-			_game.YourTurn = startGamePacket.YourTurn;
-		}
-		else if (packet.Type == PacketType::Turn)
-		{
-			auto& turnPacket = dynamic_cast<const TurnPacket&>(packet);
-
-			_game.YourTurn = turnPacket.YourTurn;
-		}
-
-		if (_gui != nullptr)
-		{
-			_gui->OnPacketReceived(packet);
-		}
+		_gui = new LobbyGui();
+		_gameManager.JoinLobby();
+		//TODO: Add network interface for this
+		SendPacket(new JoinLobbyPacket(_player.Name, _player.IconIndex));
 	}
 
-	void Update(sf::Time elapsed)
+	if (state == GameState::GAME)
 	{
-		if (_gui != nullptr)
-		{
-			_gui->Update(elapsed);
-		}
-
-		while (Packet* packet = _networkClientManager.PopPacket())
-		{
-			OnPacketReceived(*packet);
-
-			auto packetTypeValue = static_cast<int>(packet->Type);
-
-			if (packetTypeValue >= 0 && packetTypeValue <= static_cast<int>(PacketType::Invalid))
-			{
-				delete packet;
-			}
-		}
+		_gui = new GameGui();
 	}
 
-	void CheckInputs(sf::Event event)
+	_state = state;
+}
+
+void Game::Draw(sf::RenderTarget& target)
+{
+	// Render background
+	target.draw(_background);
+
+	if (_gui != nullptr)
 	{
-		if (_gui != nullptr)
-		{
-			_gui->CheckInputs(event);
-		}
+		target.draw(*_gui);
 	}
+}
 
-	void Render(sf::RenderTarget& target)
+void Game::OnPacketReceived(Packet& packet)
+{
+	if (_gui != nullptr)
 	{
-		// Render background
-		target.draw(_background);
-
-		if (_gui != nullptr)
-		{
-			target.draw(*_gui);
-		}
+		_gui->OnPacketReceived(packet);
 	}
+}
 
-	void SetBackground(const sf::Texture& texture)
-	{
-		_background.setTexture(&texture);
-		_background.setSize(sf::Vector2f(texture.getSize()));
-		_background.setPosition(0, 0);
-	}
-
-	void SetState(GameState state)
-	{
-		if (_state == state) return;
-
-		delete _gui;
-
-		if (state == GameState::MAIN_MENU)
-		{
-			_gui = new MenuGui();
-		}
-
-		if (state == GameState::LOBBY)
-		{
-			_gui = new LobbyGui();
-			_lobby.IsHost = true;
-			_lobby.WaitingForOpponent = true;
-			SendPacket(new JoinLobbyPacket(_player.Name, _player.IconIndex));
-		}
-
-		if (state == GameState::GAME)
-		{
-			_gui = new GameGui();
-		}
-
-		_state = state;
-	}
-
-	void SendPacket(Packet* packet)
-	{
-		_client.SendPacket(packet);
-	}
-
-	Lobby& GetLobby()
-	{
-		return _lobby;
-	}
-
-	GameData& GetGame()
-	{
-		return _game;
-	}
-
-	PlayerData& GetPlayer()
-	{
-		return _player;
-	}
+void Game::SetBackground(const sf::Texture& texture)
+{
+	_background.setTexture(&texture);
+	_background.setSize(sf::Vector2f(texture.getSize()));
+	_background.setPosition(0, 0);
 }

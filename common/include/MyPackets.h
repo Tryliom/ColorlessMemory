@@ -16,6 +16,7 @@ namespace MyPackets
 		StartGame,
 		Turn,
 		CardInformation,
-		LeaveGame
+		LeaveGame,
+		COUNT
 	};
 }

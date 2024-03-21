@@ -1,59 +1,88 @@
-#include "../include/NetworkClientManager.h"
+#include "NetworkClientManager.h"
 
-#include "../../common/include/PacketManager.h"
+#include "PacketManager.h"
 #include "Logger.h"
 
 #include <thread>
 
-void NetworkClientManager::ReceivePackets(Client& client)
+NetworkClientManager::NetworkClientManager(std::string_view host, unsigned short port)
+{
+	_running = true;
+	_socket = new sf::TcpSocket();
+
+	if (_socket->connect(host.data(), port) != sf::Socket::Done)
+	{
+		LOG_ERROR("Could not connect to server");
+		std::exit(EXIT_FAILURE);
+	}
+
+	std::thread receiveThread(&NetworkClientManager::ReceivePackets, this);
+	receiveThread.detach();
+
+	std::thread sendThread(&NetworkClientManager::SendPackets, this);
+	sendThread.detach();
+}
+
+void NetworkClientManager::ReceivePackets()
 {
 	while (_running)
 	{
-		Packet* packet = PacketManager::ReceivePacket(*client.socket);
+		Packet* packet = PacketManager::ReceivePacket(*_socket);
 
-		if (packet->Type == PacketType::Invalid)
+		if (packet->Type == static_cast<char>(PacketType::Invalid))
 		{
 			LOG_ERROR("Could not receive packet");
 			std::exit(EXIT_FAILURE);
 		}
 
-		std::scoped_lock lock(_mutex);
+		std::scoped_lock lock(_receivedMutex);
 		_packetReceived.push(packet);
 	}
 }
 
-void NetworkClientManager::SendPackets(Client& client) const
+void NetworkClientManager::SendPackets()
 {
 	while (_running)
 	{
-		//TODO: Correct datarace
-		if (client.packetsToBeSent.empty()) continue;
+		if (IsPacketToSendEmpty()) return;
 
-		auto* packet = client.packetsToBeSent.front();
+		std::scoped_lock lock(_sendMutex);
+
+		auto* packet = _packetToSend.front();
 		auto* sfPacket = PacketManager::CreatePacket(packet);
-		client.packetsToBeSent.pop();
-		client.socket->send(*sfPacket);
+
+		_packetToSend.pop();
+		_socket->send(*sfPacket);
+
 		delete packet;
 		delete sfPacket;
 	}
 }
 
-void NetworkClientManager::StartThreads(Client& client)
-{
-	std::thread receiveThread(&NetworkClientManager::ReceivePackets, this, std::ref(client));
-	receiveThread.detach();
-
-	std::thread sendThread(&NetworkClientManager::SendPackets, this, std::ref(client));
-	sendThread.detach();
-}
-
 Packet* NetworkClientManager::PopPacket()
 {
-	std::scoped_lock lock(_mutex);
+	if (IsPacketReceivedEmpty()) return nullptr;
+
+	std::scoped_lock lock(_receivedMutex);
 	if (_packetReceived.empty()) return nullptr;
 
 	auto* packet = _packetReceived.front();
 	_packetReceived.pop();
 
 	return packet;
+}
+
+void NetworkClientManager::SendPacket(Packet* packet)
+{
+	if (IsPacketToSendEmpty()) return;
+
+	std::scoped_lock lock(_sendMutex);
+	_packetToSend.push(packet);
+}
+
+void NetworkClientManager::Stop()
+{
+	_running = false;
+	_socket->disconnect();
+	delete _socket;
 }

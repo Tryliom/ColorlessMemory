@@ -4,7 +4,8 @@
 
 #include <utility>
 
-enum class PacketType : char
+enum class PacketType :
+	char
 {
 	Invalid,
 	COUNT // Always last
@@ -13,7 +14,7 @@ enum class PacketType : char
 // Packet attributes always need to be initialized to default values
 class Packet
 {
-public:
+ public:
 	Packet() = default;
 	explicit Packet(char type) : Type(type) {}
 	virtual ~Packet() = default;
@@ -35,18 +36,36 @@ public:
 	 * @param packet sf::Packet to read from
 	 */
 	virtual void Read(sf::Packet& packet) = 0;
+
+	template<typename T>
+	T* as()
+	{
+		if (typeid(*this) == typeid(T)) return static_cast<T*>(this);
+		else return nullptr;
+	}
 };
 
-class InvalidPacket final : public Packet
+class InvalidPacket final :
+	public Packet
 {
-public:
+ public:
 	InvalidPacket() = default;
 
-	[[nodiscard]] Packet* Clone() const override { return new InvalidPacket(); }
-	[[nodiscard]] std::string ToString() const override { return "InvalidPacket"; }
-	void Write(sf::Packet& packet) const override {}
-	void Read(sf::Packet& packet) override {}
+	[[nodiscard]] Packet* Clone() const override
+	{
+		return new InvalidPacket();
+	}
+	[[nodiscard]] std::string ToString() const override
+	{
+		return "InvalidPacket";
+	}
+	void Write(sf::Packet& packet) const override
+	{
+	}
+	void Read(sf::Packet& packet) override
+	{
+	}
 };
 
-sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket);
-sf::Packet& operator >>(sf::Packet& packet, Packet& myPacket);
+sf::Packet& operator<<(sf::Packet& packet, const Packet& myPacket);
+sf::Packet& operator>>(sf::Packet& packet, Packet& myPacket);

@@ -1,36 +1,45 @@
 #pragma once
 
-#include "Client.h"
 #include "Packet.h"
+#include "ClientNetworkInterface.h"
 
-#include <functional>
-
-//TODO: Network Interface -> Send/receive packet
-//TODO: Bind a Network Interface to this which it will be used to send/receive packets
-//TODO: Use PlayerId (host + port) to identify the client
+#include <shared_mutex>
+#include <queue>
 
 /**
  * Receive and send packet from/to server
  */
-class NetworkClientManager
+class NetworkClientManager final : public ClientNetworkInterface
 {
 private:
-	bool _running = true;
+	sf::TcpSocket* _socket = new sf::TcpSocket();
 	std::queue<Packet*> _packetReceived;
-	mutable std::shared_mutex _mutex;
+	mutable std::shared_mutex _receivedMutex;
+	std::queue<Packet*> _packetToSend;
+	mutable std::shared_mutex _sendMutex;
+	bool _running = true;
 
 	// Launch from a thread
-	void ReceivePackets(Client& client);
-	void SendPackets(Client& client) const;
+	void ReceivePackets();
+	void SendPackets();
 
-	//TODO: Add isEmpty function with shared_lock and put him before PopPacket
+	bool IsPacketReceivedEmpty() const
+	{
+		std::shared_lock lock(_receivedMutex);
+		return _packetReceived.empty();
+	}
+
+	bool IsPacketToSendEmpty() const
+	{
+		std::shared_lock lock(_sendMutex);
+		return _packetToSend.empty();
+	}
 
 public:
-	NetworkClientManager() = default;
+	NetworkClientManager(std::string_view host, unsigned short port);
 
-	void StartThreads(Client& client);
+	Packet* PopPacket() override;
+	void SendPacket(Packet* packet) override;
 
-	Packet* PopPacket();
-
-	void Stop() { _running = false; }
+	void Stop();
 };
