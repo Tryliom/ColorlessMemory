@@ -5,6 +5,7 @@
 #include "AssetManager.h"
 #include "Constants.h"
 #include "MyPackets/LeaveGamePacket.h"
+#include "MyPackets/CardInformationPacket.h"
 
 GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height) :
 	_game(game), _gameManager(gameManager), _height(height), _width(width)
@@ -43,7 +44,7 @@ GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height
 	const auto& maxWidth = _width - 600.f;
 	const auto& maxHeight = _height - 200.f;
 
-	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(0).getSize());
+	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(DEFAULT_ICON_INDEX).getSize());
 	auto xOffset = 20.f;
 	auto yOffset = 20.f;
 	auto gameAreaWidth = cardSize.x * _xCards + xOffset * (_xCards - 1);
@@ -75,7 +76,7 @@ GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height
 
 		_playCards.emplace_back(gameData.DeckType, UNKNOWN_ICON_INDEX);
 		_playCards.back().SetPosition({ startX + x * (cardSize.x + xOffset), startY + y * (cardSize.y + yOffset) });
-		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(i); });
+		_playCards.back().SetOnClicked([this, i] { OnSelectPlayCard(CardIndex {static_cast<char>(i)}); });
 		_playCards.back().SetScale(scale);
 	}
 
@@ -178,10 +179,8 @@ void GameGui::OnCheckInputs(sf::Event event)
 	}
 }
 
-void GameGui::OnUpdate(sf::Time elapsed)
+void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	//TODO: Send it with OnUpdate
-	const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(Game::GetWindow()));
 	auto& gameData = _gameManager.GetGame();
 
 	for (auto& card: _playCards)
@@ -206,74 +205,88 @@ void GameGui::OnUpdate(sf::Time elapsed)
 		}
 	}
 
+	UpdateScoringTimer(elapsed);
+	UpdateEndTimer(elapsed);
+}
+
+void GameGui::UpdateScoringTimer(sf::Time elapsed)
+{
 	if (_beforeScoringTimer > 0.f)
 	{
 		_beforeScoringTimer -= elapsed.asSeconds();
 
-		if (_beforeScoringTimer <= 0.f)
+		if (_beforeScoringTimer > 0.f) return;
+
+		const auto& gameData = _gameManager.GetGame();
+		const auto cardIndex1 = gameData.CardIndex1.Index;
+		const auto cardIndex2 = gameData.CardIndex2.Index;
+
+		if (_playCards[cardIndex1].GetIconIndex() == _playCards[cardIndex2].GetIconIndex())
 		{
-			if (_playCards[gameData.CardIndex1].GetIconIndex() == _playCards[gameData.CardIndex2].GetIconIndex())
-			{
-				_playCards[gameData.CardIndex1].Disable();
-				_playCards[gameData.CardIndex2].Disable();
+			_playCards[cardIndex1].Disable();
+			_playCards[cardIndex2].Disable();
 
-				auto& player = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? _player1 : _player2;
-				auto& score = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? gameData.Player1Score : gameData.Player2Score;
+			auto& player = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? _player1 : _player2;
+			auto& score = _yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? gameData.Player1Score : gameData.Player2Score;
 
-				score++;
-				player.SetScore(static_cast<int>(score));
+			_gameManager.IncreaseScore(_yourTurn && gameData.IsFirstPlayer || !_yourTurn && !gameData.IsFirstPlayer ? 0 : 1);
 
-				_endTurnTimer = 0.25f;
-			}
-			else
-			{
-				_playCards[gameData.CardIndex1].StartFlip();
-				_playCards[gameData.CardIndex2].StartFlip();
+			player.SetScore(static_cast<int>(score));
 
-				_endTurnTimer = 0.5f;
-			}
+			_endTurnTimer = 0.25f;
 		}
-	}
-
-	if (_endTurnTimer > 0.f)
-	{
-		_endTurnTimer -= elapsed.asSeconds();
-
-		if (_endTurnTimer <= 0.f)
+		else
 		{
-			if (gameData.Player1Score + gameData.Player2Score == _playCards.size() / 2)
-			{
-				const auto& player1Win = gameData.Player1Score > gameData.Player2Score;
-				const auto& isPlayer1 = gameData.IsFirstPlayer;
+			_playCards[cardIndex1].StartFlip();
+			_playCards[cardIndex2].StartFlip();
 
-				_gameOver = true;
-
-				_texts[1] = Text(
-						sf::Vector2f(_width / 2.f, 150.f),
-						{
-								TextLine({ CustomText{ .Text = player1Win == isPlayer1 ? "You win" : "You lose", .Size = 30 }})
-						}
-				);
-			}
-			else
-			{
-				StartTurn();
-			}
+			_endTurnTimer = 0.5f;
 		}
 	}
 }
 
-void GameGui::OnPacketReceived(const Packet& packet)
+void GameGui::UpdateEndTimer(sf::Time elapsed)
 {
-	if (packet.Type == PacketType::CardInformation)
+	if (_endTurnTimer > 0.f)
 	{
-		auto& cardInformationPacket = dynamic_cast<const CardInformationPacket&>(packet);
+		_endTurnTimer -= elapsed.asSeconds();
 
-		_playCards[cardInformationPacket.CardIndexInDeck].SetIndex(cardInformationPacket.IconIndex);
+		if (_endTurnTimer > 0.f) return;
+
+		const auto& gameData = _gameManager.GetGame();
+
+		if (gameData.Player1Score + gameData.Player2Score == _playCards.size() / 2)
+		{
+			const auto& player1Win = gameData.Player1Score > gameData.Player2Score;
+			const auto& isPlayer1 = gameData.IsFirstPlayer;
+
+			_gameOver = true;
+
+			_texts[1] = Text(
+					sf::Vector2f(_width / 2.f, 150.f),
+					{
+							TextLine({ CustomText{ .Text = player1Win == isPlayer1 ? "You win" : "You lose", .Size = 30 }})
+					}
+			);
+		}
+		else
+		{
+			StartTurn();
+		}
+	}
+}
+
+void GameGui::OnPacketReceived(Packet& packet)
+{
+	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::CardInformation))
+	{
+		auto cardInformationPacket = *packet.as<MyPackets::CardInformationPacket>();
+
+		_playCards[cardInformationPacket.CardIndexInDeck.Index].SetIndex(cardInformationPacket.IconIndex);
 
 		SelectCard(cardInformationPacket.CardIndexInDeck);
 	}
-	else if (packet.Type == PacketType::LeaveGame)
+	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::LeaveGame))
 	{
 		_gameOver = true;
 
@@ -286,47 +299,26 @@ void GameGui::OnPacketReceived(const Packet& packet)
 	}
 }
 
-void GameGui::OnSelectPlayCard(std::size_t i)
+void GameGui::OnSelectPlayCard(CardIndex cardIndex)
 {
-	auto& gameData = Game::GetGame();
-
-	if (!_yourTurn || gameData.CardIndex1 != -1 && gameData.CardIndex2 != -1) return;
-	if (gameData.CardIndex1 == i || gameData.CardIndex2 == i) return;
-
-	auto& card = _playCards[i];
+	auto& card = _playCards[cardIndex.Index];
 
 	if (card.IsFlipping()) return;
 
-	if (gameData.CardIndex1 == -1)
-	{
-		gameData.CardIndex1 = i;
-	}
-	else if (gameData.CardIndex2 == -1)
-	{
-		gameData.CardIndex2 = i;
-	}
+	if (!_gameManager.ChooseACard(cardIndex)) return;
 
 	// Send packet to know icon and other player
-	Game::SendPacket(new CardInformationPacket(i, UNKNOWN_ICON_INDEX));
+	_game.SendPacket(new MyPackets::CardInformationPacket(cardIndex, UNKNOWN_ICON_INDEX));
 }
 
-void GameGui::SelectCard(std::size_t i)
+void GameGui::SelectCard(CardIndex cardIndex)
 {
-	auto& gameData = Game::GetGame();
-	auto& card = _playCards[i];
+	auto& gameData = _gameManager.GetGame();
+	auto& card = _playCards[cardIndex.Index];
 
 	card.StartFlip();
 
-	if (gameData.CardIndex1 == -1 || gameData.CardIndex1 == i)
-	{
-		gameData.CardIndex1 = i;
-	}
-	else if (gameData.CardIndex2 == -1 || gameData.CardIndex2 == i)
-	{
-		gameData.CardIndex2 = i;
-	}
-
-	if (gameData.CardIndex2 == i)
+	if (gameData.CardIndex2 == cardIndex)
 	{
 		_blockInput = true;
 		_beforeScoringTimer = 1.f;
@@ -335,11 +327,10 @@ void GameGui::SelectCard(std::size_t i)
 
 void GameGui::StartTurn()
 {
-	auto& gameData = Game::GetGame();
+	const auto& gameData = _gameManager.GetGame();
 
 	_blockInput = false;
-	gameData.CardIndex1 = -1;
-	gameData.CardIndex2 = -1;
+	_gameManager.EndTurn();
 	_yourTurn = gameData.YourTurn;
 
 	if (!_yourTurn)

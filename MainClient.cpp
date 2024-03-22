@@ -22,7 +22,7 @@ int main()
 	_window.setVerticalSyncEnabled(true);
 
 	GameManager _gameManager;
-	Game _game(_gameManager, _networkClientManager);
+	Game _game(_gameManager, _networkClientManager, WIDTH, HEIGHT);
 
 	//TODO: Ask for username and save it to file
 	// Get player name
@@ -51,12 +51,9 @@ int main()
 
 		sf::Time elapsed = clock.restart();
 
-		_game.Update(elapsed);
-
+		_game.Update(elapsed, sf::Vector2f(sf::Mouse::getPosition(_window)));
 		_window.clear();
-
 		_game.Draw(_window);
-
 		_window.display();
 	}
 

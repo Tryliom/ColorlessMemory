@@ -3,6 +3,7 @@
 #include "MyPackets/LobbyInformationPacket.h"
 #include "MyPackets/StartGamePacket.h"
 #include "MyPackets/TurnPacket.h"
+#include "MyPackets/CardInformationPacket.h"
 
 void GameManager::OnPacketReceived(Packet& packet)
 {
@@ -31,11 +32,61 @@ void GameManager::OnPacketReceived(Packet& packet)
 
 		_game.YourTurn = turnPacket.YourTurn;
 	}
+	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::CardInformation))
+	{
+		auto cardInformationPacket = *packet.as<MyPackets::CardInformationPacket>();
+
+		const auto cardIndex = cardInformationPacket.CardIndexInDeck;
+
+		if (_game.CardIndex1 == UNKNOWN_CARD_INDEX || _game.CardIndex1 == cardIndex)
+		{
+			_game.CardIndex1 = cardIndex;
+		}
+		else if (_game.CardIndex2 == UNKNOWN_CARD_INDEX || _game.CardIndex2 == cardIndex)
+		{
+			_game.CardIndex2 = cardIndex;
+		}
+	}
 }
 
 void GameManager::SetUsername(const std::string& username)
 {
 	_player.Name = PlayerName(username);
+}
+
+void GameManager::IncreaseScore(char playerIndex)
+{
+	if (playerIndex == 0)
+	{
+		_game.Player1Score++;
+	}
+	else
+	{
+		_game.Player2Score++;
+	}
+}
+
+bool GameManager::ChooseACard(CardIndex cardIndexInDeck)
+{
+	if (!_game.YourTurn || _game.CardIndex1 != UNKNOWN_CARD_INDEX && _game.CardIndex2 != UNKNOWN_CARD_INDEX) return false;
+	if (_game.CardIndex1 == cardIndexInDeck || _game.CardIndex2 == cardIndexInDeck) return false;
+
+	if (_game.CardIndex1 == UNKNOWN_CARD_INDEX)
+	{
+		_game.CardIndex1 = cardIndexInDeck;
+	}
+	else if (_game.CardIndex2 == UNKNOWN_CARD_INDEX)
+	{
+		_game.CardIndex2 = cardIndexInDeck;
+	}
+
+	return true;
+}
+
+void GameManager::EndTurn()
+{
+	_game.CardIndex1 = UNKNOWN_CARD_INDEX;
+	_game.CardIndex2 = UNKNOWN_CARD_INDEX;
 }
 
 void GameManager::JoinLobby()

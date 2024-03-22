@@ -25,7 +25,7 @@ class Game
 	explicit Game(GameManager& gameManager, ClientNetworkInterface& networkManager, int width, int height);
 
 	void CheckInputs(const sf::Event& event);
-	void Update(sf::Time elapsed);
+	void Update(sf::Time elapsed, sf::Vector2f mousePosition);
 	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
 

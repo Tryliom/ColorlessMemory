@@ -29,10 +29,8 @@ void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 
 }
 
-void Gui::Update(const sf::Time elapsed)
+void Gui::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(Game::GetWindow()));
-
 	for (auto& button : _buttons)
 	{
 		if (button.IsDisabled())
@@ -58,7 +56,7 @@ void Gui::Update(const sf::Time elapsed)
 		}
 	}
 
-	OnUpdate(elapsed);
+	OnUpdate(elapsed, mousePosition);
 }
 
 void Gui::CheckInputs(const sf::Event event)

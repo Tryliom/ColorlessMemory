@@ -35,13 +35,16 @@ class GameGui final :
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	void OnCheckInputs(sf::Event event) override;
 
-	void OnSelectPlayCard(std::size_t i);
-	void SelectCard(std::size_t i);
+	void OnSelectPlayCard(CardIndex cardIndex);
+	void SelectCard(CardIndex cardIndex);
 	void StartTurn();
+
+	void UpdateScoringTimer(sf::Time elapsed);
+	void UpdateEndTimer(sf::Time elapsed);
 
  public:
 	explicit GameGui(Game& game, GameManager& gameManager, float width, float height);
 
-	void OnUpdate(sf::Time elapsed) override;
-	void OnPacketReceived(const Packet& packet) override;
+	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;
+	void OnPacketReceived(Packet& packet) override;
 };

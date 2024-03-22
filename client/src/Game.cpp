@@ -24,11 +24,11 @@ void Game::CheckInputs(const sf::Event& event)
 	}
 }
 
-void Game::Update(sf::Time elapsed)
+void Game::Update(sf::Time elapsed, sf::Vector2f mousePosition)
 {
 	if (_gui != nullptr)
 	{
-		_gui->Update(elapsed);
+		_gui->Update(elapsed, mousePosition);
 	}
 
 	while (Packet* packet = _networkManager.PopPacket())

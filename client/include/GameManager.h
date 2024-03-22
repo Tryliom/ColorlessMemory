@@ -54,8 +54,20 @@ class GameManager
  public:
 	void OnPacketReceived(Packet& packet);
 
-	void SetUsername(const std::string& username);
 	void JoinLobby();
+
+	void SetUsername(const std::string& username);
+	void IncreaseScore(char playerIndex);
+	/**
+	 * @brief Choose a card if it's the player's turn and the card is not already selected
+	 * @param cardIndexInDeck
+	 * @return True if the card was selected, false otherwise
+	 */
+	bool ChooseACard(CardIndex cardIndexInDeck);
+	/**
+	 * @brief End the player's turn by putting UNKNOWN_CARD_INDEX in CardIndex1 and CardIndex2
+	 */
+	void EndTurn();
 
 	[[nodiscard]] MyPackets::JoinLobbyPacket* ToJoinLobbyPacket() const;
 
