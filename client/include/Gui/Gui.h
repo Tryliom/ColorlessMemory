@@ -9,10 +9,9 @@
 class Gui : public sf::Drawable
 {
 public:
-	Gui();
+	Gui() = default;
 
 protected:
-	sf::RectangleShape _background;
 	std::vector<Button> _buttons;
 	std::vector<Text> _texts;
 

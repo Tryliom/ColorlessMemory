@@ -1,10 +1,5 @@
 #pragma once
 
-enum class IconType : char
-{
-	Icon1, Icon2, Icon3, Icon4, Icon5
-};
-
 struct CardIconIndex final
 {
 	char Index{};
@@ -30,6 +25,11 @@ static constexpr auto DEFAULT_ICON_INDEX = CardIconIndex{ 0 };
 static constexpr auto START_PLAYER_ICON_INDEX = CardIconIndex{ 20 };
 static constexpr auto UNKNOWN_CARD_INDEX = CardIndex{ -1 };
 
+enum class IconType : char
+{
+	Icon1 = static_cast<char>(START_PLAYER_ICON_INDEX.Index),
+	Icon2, Icon3, Icon4, Icon5
+};
 
 enum class DeckType : char
 {

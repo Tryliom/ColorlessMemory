@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Network.hpp>
+
 #include <array>
 #include <string>
 

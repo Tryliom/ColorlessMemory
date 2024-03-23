@@ -54,6 +54,11 @@ void GameManager::SetUsername(const std::string& username)
 	_player.Name = PlayerName(username);
 }
 
+void GameManager::SetPlayerIcon(IconType iconIndex)
+{
+	_player.IconIndex = iconIndex;
+}
+
 void GameManager::IncreaseScore(char playerIndex)
 {
 	if (playerIndex == 0)
@@ -81,6 +86,11 @@ bool GameManager::ChooseACard(CardIndex cardIndexInDeck)
 	}
 
 	return true;
+}
+
+void GameManager::ChangeDeck(DeckType deckType)
+{
+	_lobby.DeckType = deckType;
 }
 
 void GameManager::EndTurn()

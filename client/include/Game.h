@@ -30,21 +30,24 @@ class Game
 	void Draw(sf::RenderTarget& target);
 
 	void SendPacket(Packet* packet);
+	void Quit();
+
+	void OnQuit(std::function<void()> onQuit);
 
  private:
+	sf::RectangleShape _background;
+	std::function<void()> _onQuit;
 	// Gui
 	Gui* _gui { nullptr };
-	GameState _state = GameState::NONE;
-	sf::RectangleShape _background;
-
 	// Game
 	GameManager& _gameManager;
 	ClientNetworkInterface& _networkManager;
+
+	GameState _state = GameState::NONE;
 
 	int _width = 0;
 	int _height = 0;
 
 	void SetBackground(const sf::Texture& texture);
-
 	void OnPacketReceived(Packet& packet);
 };

@@ -2,16 +2,8 @@
 
 #include "Game.h"
 
-Gui::Gui()
-{
-	_background.setSize(sf::Vector2f(Game::WIDTH, Game::HEIGHT));
-	_background.setFillColor(sf::Color(0, 0, 0, 100));
-}
-
 void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 {
-	target.draw(_background, states);
-
 	OnDraw(target, states);
 
 	for (auto& button : _buttons)

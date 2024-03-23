@@ -44,12 +44,12 @@ void NetworkClientManager::SendPackets()
 {
 	while (_running)
 	{
-		if (IsPacketToSendEmpty()) return;
+		if (IsPacketToSendEmpty()) continue;
 
 		std::scoped_lock lock(_sendMutex);
 
 		auto* packet = _packetToSend.front();
-		auto* sfPacket = PacketManager::CreatePacket(packet);
+		auto* sfPacket = PacketManager::ToSfPacket(packet);
 
 		_packetToSend.pop();
 		_socket->send(*sfPacket);
@@ -74,8 +74,6 @@ Packet* NetworkClientManager::PopPacket()
 
 void NetworkClientManager::SendPacket(Packet* packet)
 {
-	if (IsPacketToSendEmpty()) return;
-
 	std::scoped_lock lock(_sendMutex);
 	_packetToSend.push(packet);
 }

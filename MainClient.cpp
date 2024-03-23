@@ -24,6 +24,10 @@ int main()
 	GameManager _gameManager;
 	Game _game(_gameManager, _networkClientManager, WIDTH, HEIGHT);
 
+	_game.OnQuit([&]() {
+		_window.close();
+	});
+
 	//TODO: Ask for username and save it to file
 	// Get player name
 	std::string username = std::getenv("USERNAME") ? std::getenv("USERNAME") : "default";

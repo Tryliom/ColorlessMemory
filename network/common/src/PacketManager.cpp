@@ -10,7 +10,7 @@ namespace PacketManager
 
 	bool SendPacket(sf::TcpSocket& socket, Packet* packet)
 	{
-		auto* p = CreatePacket(packet);
+		auto* p = ToSfPacket(packet);
 		auto status = socket.send(*p);
 		delete p;
 
@@ -26,18 +26,23 @@ namespace PacketManager
 			return new InvalidPacket();
 		}
 
+		return FromPacket(&packet);
+	}
+
+	Packet* FromPacket(sf::Packet* packet)
+	{
 		sf::Uint8 packetTypeUint;
-		packet >> packetTypeUint;
+		*packet >> packetTypeUint;
 		auto packetType = static_cast<PacketType>(packetTypeUint);
 
 		Packet* ourPacket = _allPacketTypes[static_cast<int>(packetType)]->Clone();
 
-		packet >> *ourPacket;
+		*packet >> *ourPacket;
 
 		return ourPacket;
 	}
 
-	sf::Packet* CreatePacket(Packet* packet)
+	sf::Packet* ToSfPacket(Packet* packet)
 	{
 		auto* p = new sf::Packet();
 		*p << *packet;

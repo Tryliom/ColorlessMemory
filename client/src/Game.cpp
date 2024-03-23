@@ -8,6 +8,7 @@
 #include "gui/guis/GameGui.h"
 
 #include <SFML/Graphics.hpp>
+#include <utility>
 
 Game::Game(GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, int width, int height) :
 	_gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
@@ -53,12 +54,12 @@ void Game::SetState(GameState state)
 
 	if (state == GameState::MAIN_MENU)
 	{
-		_gui = new MenuGui();
+		_gui = new MenuGui(*this, _gameManager, _width, _height);
 	}
 
 	if (state == GameState::LOBBY)
 	{
-		_gui = new LobbyGui();
+		_gui = new LobbyGui(*this, _gameManager, _width, _height);
 		_gameManager.JoinLobby();
 		_networkManager.SendPacket(_gameManager.ToJoinLobbyPacket());
 	}
@@ -93,6 +94,19 @@ void Game::OnPacketReceived(Packet& packet)
 	{
 		_gui->OnPacketReceived(packet);
 	}
+}
+
+void Game::Quit()
+{
+	if (_onQuit != nullptr)
+	{
+		_onQuit();
+	}
+}
+
+void Game::OnQuit(std::function<void()> onQuit)
+{
+	_onQuit = std::move(onQuit);
 }
 
 void Game::SetBackground(const sf::Texture& texture)

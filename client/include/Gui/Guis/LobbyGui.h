@@ -6,9 +6,18 @@
 
 #include <array>
 
+class Game;
+class GameManager;
+
 class LobbyGui final : public Gui
 {
 private:
+	Game& _game;
+	GameManager& _gameManager;
+
+	float _height = 0;
+	float _width = 0;
+
 	PlayerUi _player1;
 	PlayerUi _player2;
 
@@ -17,7 +26,7 @@ private:
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 public:
-	explicit LobbyGui();
+	explicit LobbyGui(Game& game, GameManager& gameManager, float width, float height);
 
-	void OnPacketReceived(const Packet& packet) override;
+	void OnPacketReceived(Packet& packet) override;
 };

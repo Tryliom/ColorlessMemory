@@ -103,8 +103,8 @@ GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height
 	_player2.SetName(lobby.Player2.Name.AsString());
 
 	// Set player icons
-	_player1.SetIcon({ static_cast<char>(START_PLAYER_ICON_INDEX.Index + static_cast<char>(lobby.Player1.IconIndex)) });
-	_player2.SetIcon({ static_cast<char>(START_PLAYER_ICON_INDEX.Index + static_cast<char>(lobby.Player2.IconIndex)) });
+	_player1.SetIcon({ static_cast<char>(lobby.Player1.IconIndex) });
+	_player2.SetIcon({ static_cast<char>(lobby.Player2.IconIndex) });
 
 	// Set player scores
 	_player1.SetScore(0);

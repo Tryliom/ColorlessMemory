@@ -14,9 +14,8 @@ namespace PacketManager
 	 */
 	Packet* ReceivePacket(sf::TcpSocket& socket);
 
-	sf::Packet* CreatePacket(Packet* packet);
-
-	//TODO: Use only funcs: sf::Packet* FromPacket(Packet* packet); and Packet* ToPacket(sf::Packet* packet);
+	Packet* FromPacket(sf::Packet* packet);
+	sf::Packet* ToSfPacket(Packet* packet);
 
 	/**
 	 * @brief Register a new packet type

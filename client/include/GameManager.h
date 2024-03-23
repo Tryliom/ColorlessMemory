@@ -10,7 +10,7 @@
 struct PlayerData
 {
 	PlayerName Name;
-	IconType IconIndex{};
+	IconType IconIndex { IconType::Icon1 };
 };
 
 struct Lobby
@@ -57,13 +57,17 @@ class GameManager
 	void JoinLobby();
 
 	void SetUsername(const std::string& username);
+	void SetPlayerIcon(IconType iconIndex);
 	void IncreaseScore(char playerIndex);
 	/**
 	 * @brief Choose a card if it's the player's turn and the card is not already selected
 	 * @param cardIndexInDeck
 	 * @return True if the card was selected, false otherwise
 	 */
+
 	bool ChooseACard(CardIndex cardIndexInDeck);
+	void ChangeDeck(DeckType deckType);
+
 	/**
 	 * @brief End the player's turn by putting UNKNOWN_CARD_INDEX in CardIndex1 and CardIndex2
 	 */
