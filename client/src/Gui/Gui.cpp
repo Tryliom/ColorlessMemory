@@ -1,7 +1,5 @@
 #include "gui/Gui.h"
 
-#include "Game.h"
-
 void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 {
 	OnDraw(target, states);

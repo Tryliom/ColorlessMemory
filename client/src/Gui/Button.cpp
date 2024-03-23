@@ -144,25 +144,15 @@ void Button::OnClick()
 	if (_onClick)
 	{
 		_onClick();
-
-		sf::Cursor cursor;
-		cursor.loadFromSystem(sf::Cursor::Arrow);
-		Game::GetWindow().setMouseCursor(cursor);
 	}
 }
 
 void Button::OnStartHover()
 {
 	_hover = true;
-	sf::Cursor cursor;
-	cursor.loadFromSystem(sf::Cursor::Hand);
-	Game::GetWindow().setMouseCursor(cursor);
 }
 
 void Button::OnEndHover()
 {
 	_hover = false;
-	sf::Cursor cursor;
-	cursor.loadFromSystem(sf::Cursor::Arrow);
-	Game::GetWindow().setMouseCursor(cursor);
 }
