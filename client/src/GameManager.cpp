@@ -110,17 +110,17 @@ MyPackets::JoinLobbyPacket* GameManager::ToJoinLobbyPacket() const
 	return new MyPackets::JoinLobbyPacket(_player.Name.AsString(), _player.IconIndex);
 }
 
-const PlayerData& GameManager::GetPlayer() const
+const GameData::Player& GameManager::GetPlayer() const
 {
 	return _player;
 }
 
-const Lobby& GameManager::GetLobby() const
+const GameData::Lobby& GameManager::GetLobby() const
 {
 	return _lobby;
 }
 
-const GameData& GameManager::GetGame() const
+const GameData::Game& GameManager::GetGame() const
 {
 	return _game;
 }

@@ -7,39 +7,42 @@
 
 #include <string>
 
-struct PlayerData
+namespace GameData
 {
-	PlayerName Name;
-	IconType IconIndex { IconType::Icon1 };
-};
-
-struct Lobby
-{
-	bool IsHost{};
-	bool WaitingForOpponent = true;
-	DeckType DeckType = DeckType::Deck3x2;
-	PlayerData Player1;
-	PlayerData Player2;
-};
-
-struct GameData
-{
-	DeckType DeckType = DeckType::Deck3x2;
-	CardIndex CardIndex1{ UNKNOWN_CARD_INDEX };
-	CardIndex CardIndex2{ UNKNOWN_CARD_INDEX };
-	char Player1Score{};
-	char Player2Score{};
-	bool IsFirstPlayer{};
-	bool YourTurn{};
-
-	void Reset(const Lobby& lobby)
+	struct Player
 	{
-		DeckType = lobby.DeckType;
-		Player1Score = 0;
-		Player2Score = 0;
-		IsFirstPlayer = lobby.IsHost;
-	}
-};
+		PlayerName Name;
+		IconType IconIndex{ IconType::Icon1 };
+	};
+
+	struct Lobby
+	{
+		bool IsHost{};
+		bool WaitingForOpponent = true;
+		DeckType DeckType = DeckType::Deck3x2;
+		Player Player1;
+		Player Player2;
+	};
+
+	struct Game
+	{
+		DeckType DeckType = DeckType::Deck3x2;
+		CardIndex CardIndex1{ UNKNOWN_CARD_INDEX };
+		CardIndex CardIndex2{ UNKNOWN_CARD_INDEX };
+		char Player1Score{};
+		char Player2Score{};
+		bool IsFirstPlayer{};
+		bool YourTurn{};
+
+		void Reset(const Lobby& lobby)
+		{
+			DeckType = lobby.DeckType;
+			Player1Score = 0;
+			Player2Score = 0;
+			IsFirstPlayer = lobby.IsHost;
+		}
+	};
+}
 
 class GameManager
 {
@@ -47,9 +50,9 @@ class GameManager
 	GameManager() = default;
 
  private:
-	PlayerData _player;
-	Lobby _lobby;
-	GameData _game;
+	GameData::Player _player;
+	GameData::Lobby _lobby;
+	GameData::Game _game;
 
  public:
 	void OnPacketReceived(Packet& packet);
@@ -75,7 +78,7 @@ class GameManager
 
 	[[nodiscard]] MyPackets::JoinLobbyPacket* ToJoinLobbyPacket() const;
 
-	[[nodiscard]] const PlayerData& GetPlayer() const;
-	[[nodiscard]] const Lobby& GetLobby() const;
-	[[nodiscard]] const GameData& GetGame() const;
+	[[nodiscard]] const GameData::Player& GetPlayer() const;
+	[[nodiscard]] const GameData::Lobby& GetLobby() const;
+	[[nodiscard]] const GameData::Game& GetGame() const;
 };

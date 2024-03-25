@@ -20,7 +20,9 @@ namespace PacketManager
 	Packet* ReceivePacket(sf::TcpSocket& socket)
 	{
 		sf::Packet packet;
-		if (socket.receive(packet) != sf::Socket::Done)
+		auto status = socket.receive(packet);
+
+		if (status != sf::Socket::Done)
 		{
 			LOG_ERROR("Could not receive packet");
 			return new InvalidPacket();

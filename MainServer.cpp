@@ -5,8 +5,14 @@
 int main()
 {
 	MyPackets::RegisterMyPackets();
-	GameServer::Initialize();
-	GameServer::StartLoop();
+
+	NetworkServerManager networkServerManager(PORT);
+	Server server(networkServerManager);
+
+	while(networkServerManager.Running)
+	{
+		server.Update();
+	}
 
 	return EXIT_SUCCESS;
 }

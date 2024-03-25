@@ -5,8 +5,8 @@
 
 struct PacketData
 {
-	Packet* PacketReceived{};
-	ClientId FromClient;
+	Packet* Packet{};
+	ClientId Client{};
 };
 
 class ServerNetworkInterface
@@ -15,7 +15,7 @@ public:
 	/**
 	 * @brief Get the next packet to process
 	 * Need to delete the packet after using it
-	 * @return
+	 * @return The packet, if there is no packet it will return nullptr in the packet
 	 */
 	virtual PacketData PopPacket() = 0;
 
@@ -24,5 +24,7 @@ public:
 	 * @param packet The packet to send
 	 * @param clientIndex The index of the client to send the packet to
 	 */
-	virtual void SendPacket(Packet* packet, ClientId clientId) = 0;
+	virtual void SendPacket(Packet* packet, const ClientId& clientId) = 0;
+
+	virtual ClientId PopDisconnectedClient() = 0;
 };
