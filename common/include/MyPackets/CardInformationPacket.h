@@ -24,10 +24,11 @@ namespace MyPackets
 
 		void Read(sf::Packet& packet) override
 		{
-			char cardIndexUint, iconIndexUint;
-			packet >> &cardIndexUint >> &iconIndexUint;
-			CardIndexInDeck = CardIndex(cardIndexUint);
-			IconIndex = CardIconIndex(iconIndexUint);
+			sf::Uint8 cardIndexUint, iconIndexUint;
+			packet >> cardIndexUint >> iconIndexUint;
+
+			CardIndexInDeck = CardIndex(static_cast<char>(cardIndexUint));
+			IconIndex = CardIconIndex(static_cast<char>(iconIndexUint));
 		}
 	};
 

@@ -22,14 +22,16 @@ namespace MyPackets
 		void Write(sf::Packet& packet) const override
 		{
 			packet << Name;
-			packet << static_cast<char>(IconIndex);
+			packet << static_cast<sf::Uint8>(IconIndex);
 		}
 
 		void Read(sf::Packet& packet) override
 		{
 			packet >> Name;
-			char iconIndex;
-			packet >> &iconIndex;
+
+			sf::Uint8 iconIndex;
+			packet >> iconIndex;
+
 			IconIndex = static_cast<IconType>(iconIndex);
 		}
 	};

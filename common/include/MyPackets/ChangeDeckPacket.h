@@ -19,13 +19,14 @@ namespace MyPackets
 
 		void Write(sf::Packet& packet) const override
 		{
-			packet << static_cast<char>(ChosenDeckType);
+			packet << static_cast<sf::Uint8>(ChosenDeckType);
 		}
 
 		void Read(sf::Packet& packet) override
 		{
-			char deckType;
-			packet >> &deckType;
+			sf::Uint8 deckType;
+			packet >> deckType;
+
 			ChosenDeckType = static_cast<DeckType>(deckType);
 		}
 	};

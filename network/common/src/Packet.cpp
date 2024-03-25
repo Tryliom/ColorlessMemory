@@ -2,7 +2,8 @@
 
 sf::Packet& operator <<(sf::Packet& packet, const Packet& myPacket)
 {
-	packet << myPacket.Type;
+	auto type = static_cast<sf::Uint8>(myPacket.Type);
+	packet << type;
 
 	myPacket.Write(packet);
 
