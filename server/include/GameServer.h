@@ -27,6 +27,7 @@ public:
 
 private:
 	void JoinLobby(ClientId clientId, PlayerName playerName, IconType iconType);
+	void AddToLobby(ServerData::Lobby& lobby, ClientId clientId, PlayerName playerName, IconType iconType);
 	void RemoveFromLobby(ClientId clientId);
 	void RemoveFromGame(ClientId clientId);
 	void ChangeDeck(ClientId clientId, DeckType deckType);

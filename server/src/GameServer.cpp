@@ -103,26 +103,41 @@ void Server::JoinLobby(ClientId clientId, PlayerName playerName, IconType iconTy
 	// Check if there is a lobby with only one player
 	for (auto& lobby: _lobbies)
 	{
-		if (lobby.Players[SECOND_PLAYER_INDEX] == EMPTY_CLIENT_ID)
+		if (lobby.Players[FIRST_PLAYER_INDEX] == EMPTY_CLIENT_ID || lobby.Players[SECOND_PLAYER_INDEX] == EMPTY_CLIENT_ID)
 		{
-			lobby.Players[SECOND_PLAYER_INDEX] = clientId;
-			lobby.PlayerNames[SECOND_PLAYER_INDEX] = playerName;
-			lobby.PlayerIcons[SECOND_PLAYER_INDEX] = iconType;
+			AddToLobby(lobby, clientId, playerName, iconType);
 
-			_serverNetworkInterface.SendPacket(lobby.ToPacket(true), lobby.Players[FIRST_PLAYER_INDEX]);
-			_serverNetworkInterface.SendPacket(lobby.ToPacket(false), clientId);
 			return;
 		}
 	}
 
 	// If there is no lobby with only one player, create a new lobby
 	_lobbies.emplace_back();
-	auto& lobby = _lobbies.back();
-	lobby.Players[FIRST_PLAYER_INDEX] = clientId;
-	lobby.PlayerNames[FIRST_PLAYER_INDEX] = playerName;
-	lobby.PlayerIcons[FIRST_PLAYER_INDEX] = iconType;
+	AddToLobby(_lobbies.back(), clientId, playerName, iconType);
+}
 
-	_serverNetworkInterface.SendPacket(lobby.ToPacket(true), clientId);
+void Server::AddToLobby(ServerData::Lobby& lobby, ClientId clientId, PlayerName playerName, IconType iconType)
+{
+	static constexpr char FIRST_PLAYER_INDEX = 0;
+	static constexpr char SECOND_PLAYER_INDEX = 1;
+
+	if (lobby.Players[FIRST_PLAYER_INDEX] == EMPTY_CLIENT_ID)
+	{
+		lobby.Players[FIRST_PLAYER_INDEX] = clientId;
+		lobby.PlayerNames[FIRST_PLAYER_INDEX] = playerName;
+		lobby.PlayerIcons[FIRST_PLAYER_INDEX] = iconType;
+
+		_serverNetworkInterface.SendPacket(lobby.ToPacket(true), clientId);
+	}
+	else if (lobby.Players[SECOND_PLAYER_INDEX] == EMPTY_CLIENT_ID)
+	{
+		lobby.Players[SECOND_PLAYER_INDEX] = clientId;
+		lobby.PlayerNames[SECOND_PLAYER_INDEX] = playerName;
+		lobby.PlayerIcons[SECOND_PLAYER_INDEX] = iconType;
+
+		_serverNetworkInterface.SendPacket(lobby.ToPacket(true), lobby.Players[FIRST_PLAYER_INDEX]);
+		_serverNetworkInterface.SendPacket(lobby.ToPacket(false), clientId);
+	}
 }
 
 void Server::RemoveFromLobby(ClientId clientId)
