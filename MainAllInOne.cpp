@@ -58,7 +58,7 @@ int main()
 	int gameIndex = 0;
 	auto gameNumber = Text(
 			sf::Vector2f(10, 10),
-			{ TextLine({ CustomText{ .Text = "Game " + gameIndex, .Size = 18 }}) }, -1, false
+			{ TextLine({ CustomText{ .Text = "Game " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
 	);
 
 	while (window.isOpen())
@@ -78,7 +78,7 @@ int main()
 				gameIndex = (gameIndex + 1) % games.size();
 				gameNumber = Text(
 						sf::Vector2f(10, 10),
-						{ TextLine({ CustomText{ .Text = "Game " + gameIndex, .Size = 18 }}) }, -1, false
+						{ TextLine({ CustomText{ .Text = "Game " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
 				);
 			}
 
@@ -101,6 +101,7 @@ int main()
 	}
 
 	networkClientManager.Stop();
+	networkServerManager.Running = false;
 
 	return EXIT_SUCCESS;
 }
