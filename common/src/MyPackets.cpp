@@ -18,9 +18,9 @@ namespace MyPackets
 		PacketManager::RegisterPacketType(new ChangeDeckPacket());
 		PacketManager::RegisterPacketType(new JoinLobbyPacket());
 		PacketManager::RegisterPacketType(new LeaveLobbyPacket());
+		PacketManager::RegisterPacketType(new StartGamePacket());
 		PacketManager::RegisterPacketType(new TurnPacket());
 		PacketManager::RegisterPacketType(new CardInformationPacket());
-		PacketManager::RegisterPacketType(new StartGamePacket());
 		PacketManager::RegisterPacketType(new LeaveGamePacket());
 	}
 }
