@@ -277,7 +277,7 @@ void Server::SelectCard(ClientId clientId, CardIndex cardIndex)
 		if (game.Cards[game.SelectedCards[FIRST_SELECTED_CARD].Index] !=
 			game.Cards[game.SelectedCards[SECOND_SELECTED_CARD].Index])
 		{
-			game.CurrentTurn |= 1; // Change the turn
+			game.CurrentTurn = game.CurrentTurn == PLAYER1_INDEX ? PLAYER2_INDEX : PLAYER1_INDEX;
 		}
 		else
 		{
