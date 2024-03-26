@@ -15,6 +15,7 @@ find_package(SFML COMPONENTS system network CONFIG REQUIRED)
 
 add_executable(client MainClient.cpp)
 add_executable(server MainServer.cpp)
+add_executable(allInOne MainAllInOne.cpp)
 
 file(GLOB_RECURSE DATA_FILES
         "data/*.png"
@@ -98,5 +99,6 @@ target_link_libraries(ServerPart PUBLIC NetworkServer)
 
 target_link_libraries(client PUBLIC ClientPart)
 target_link_libraries(server PUBLIC ServerPart)
+target_link_libraries(allInOne PUBLIC ClientPart ServerPart)
 
 add_dependencies(client data_target)
