@@ -12,6 +12,7 @@ add_definitions("-DPORT=${PORT}")
 
 find_package(OpenGL REQUIRED)
 find_package(SFML COMPONENTS system network CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(client MainClient.cpp)
 add_executable(server MainServer.cpp)
@@ -102,3 +103,13 @@ target_link_libraries(server PUBLIC ServerPart)
 target_link_libraries(allInOne PUBLIC ClientPart ServerPart)
 
 add_dependencies(client data_target)
+
+file(GLOB_RECURSE TEST_FILES tests/*.cpp)
+foreach(test_file ${TEST_FILES} )
+    get_filename_component(test_name ${test_file} NAME_WE)
+
+    add_executable(${test_name} ${test_file})
+
+    target_link_libraries(${test_name} PRIVATE network GTest::gtest GTest::gtest_main)
+    target_link_libraries(${test_name} PUBLIC ClientPart ServerPart)
+endforeach()

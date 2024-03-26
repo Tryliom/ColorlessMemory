@@ -7,7 +7,8 @@
       "name": "freetype"
     },
     "openal-soft",
-    "sfml"
+    "sfml",
+    "gtest"
   ],
   "overrides": [
     {"name": "freetype", "version": "2.10.0"},
