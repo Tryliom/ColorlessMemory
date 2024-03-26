@@ -19,7 +19,10 @@ int main()
 	Server server(networkServerManager);
 
 	// Network
-	NetworkClientManager networkClientManager(HOST_NAME, PORT);
+	std::array<NetworkClientManager, 2> networkClientManagers = {
+		NetworkClientManager(HOST_NAME, PORT),
+		NetworkClientManager(HOST_NAME, PORT)
+	};
 
 	// Set the size of the game
 	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(WIDTH, HEIGHT), "Colorless Memory", sf::Style::Default));
@@ -31,8 +34,8 @@ int main()
 		GameManager()
 	};
 	std::array<Game, 2> games = {
-		Game(gameManagers[0], networkClientManager, WIDTH, HEIGHT),
-		Game(gameManagers[1], networkClientManager, WIDTH, HEIGHT)
+		Game(gameManagers[0], networkClientManagers[0], WIDTH, HEIGHT),
+		Game(gameManagers[1], networkClientManagers[1], WIDTH, HEIGHT)
 	};
 
 	for (auto& game : games)
@@ -100,7 +103,11 @@ int main()
 		window.display();
 	}
 
-	networkClientManager.Stop();
+	for (auto& networkClientManager : networkClientManagers)
+	{
+		networkClientManager.Stop();
+	}
+
 	networkServerManager.Running = false;
 
 	return EXIT_SUCCESS;
