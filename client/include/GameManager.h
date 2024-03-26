@@ -12,7 +12,7 @@ namespace GameData
 	struct Player
 	{
 		PlayerName Name;
-		IconType IconIndex{ IconType::Icon1 };
+		IconType IconIndex { IconType::Icon1 };
 	};
 
 	struct Lobby

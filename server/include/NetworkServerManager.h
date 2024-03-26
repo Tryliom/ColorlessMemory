@@ -44,5 +44,4 @@ private:
 
 	void AcceptNewClients();
 	void ReceivePacketFromClient(const ClientId& clientId);
-	void CheckPacketToBeSent();
 };

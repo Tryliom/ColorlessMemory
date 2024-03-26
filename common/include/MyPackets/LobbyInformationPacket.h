@@ -17,8 +17,8 @@ namespace MyPackets
 		{
 			IsHost = isHost;
 			WaitingForOpponent = waitingForOpponent;
-			Player1Name = std::move(player1Name);
-			Player2Name = std::move(player2Name);
+			Player1Name = player1Name;
+			Player2Name = player2Name;
 			Player1Icon = player1Icon;
 			Player2Icon = player2Icon;
 			ChosenDeckType = deckType;

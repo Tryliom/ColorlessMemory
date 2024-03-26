@@ -19,9 +19,6 @@ NetworkServerManager::NetworkServerManager(unsigned short port)
 
 	std::thread clientAcceptor = std::thread([this]() {AcceptNewClients();});
 	clientAcceptor.detach();
-
-	std::thread packetSender = std::thread([&] {CheckPacketToBeSent();});
-	packetSender.detach();
 }
 
 NetworkServerManager::~NetworkServerManager()
@@ -44,9 +41,15 @@ PacketData NetworkServerManager::PopPacket()
 
 void NetworkServerManager::SendPacket(Packet* packet, const ClientId& clientId)
 {
-	std::scoped_lock lock(_mutexToSendPackets);
+	auto* sfPacket = PacketManager::ToSfPacket(packet);
 
-	_packetsToSend.push(PacketData { packet, clientId });
+	{
+		std::scoped_lock lock(_mutexClients);
+		_clients[clientId.Index].second->send(*sfPacket);
+	}
+
+	delete packet;
+	delete sfPacket;
 }
 
 ClientId NetworkServerManager::PopDisconnectedClient()
@@ -151,21 +154,4 @@ void NetworkServerManager::ReceivePacketFromClient(const ClientId& clientId)
 		delete _clients[counter].second;
 		_clients[counter].second = nullptr;
 	}
-}
-
-void NetworkServerManager::CheckPacketToBeSent()
-{
-	std::scoped_lock lock(_mutexToSendPackets);
-
-	if (_packetsToSend.empty()) return;
-
-	auto packetData = _packetsToSend.front();
-	_packetsToSend.pop();
-
-	auto* sfPacket = PacketManager::ToSfPacket(packetData.Packet);
-
-	_clients[packetData.Client.Index].second->send(*sfPacket);
-
-	delete packetData.Packet;
-	delete sfPacket;
 }
