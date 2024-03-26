@@ -9,7 +9,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 {
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::LobbyInformation))
 	{
-		auto joinLobbyPacket = *packet.as<MyPackets::LobbyInformationPacket>();
+		auto joinLobbyPacket = *packet.As<MyPackets::LobbyInformationPacket>();
 
 		_lobby.IsHost = joinLobbyPacket.IsHost;
 		_lobby.WaitingForOpponent = joinLobbyPacket.WaitingForOpponent;
@@ -20,7 +20,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{
-		auto startGamePacket = *packet.as<MyPackets::StartGamePacket>();
+		auto startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
 		_lobby.DeckType = startGamePacket.ChosenDeckType;
 		_game.Reset(_lobby);
@@ -28,13 +28,13 @@ void GameManager::OnPacketReceived(Packet& packet)
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::Turn))
 	{
-		auto turnPacket = *packet.as<MyPackets::TurnPacket>();
+		auto turnPacket = *packet.As<MyPackets::TurnPacket>();
 
 		_game.YourTurn = turnPacket.YourTurn;
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::CardInformation))
 	{
-		auto cardInformationPacket = *packet.as<MyPackets::CardInformationPacket>();
+		auto cardInformationPacket = *packet.As<MyPackets::CardInformationPacket>();
 
 		const auto cardIndex = cardInformationPacket.CardIndexInDeck;
 

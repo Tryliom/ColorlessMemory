@@ -55,13 +55,13 @@ void Server::OnReceivePacket(PacketData packetData)
 
 	if (packet->Type == static_cast<char>(MyPackets::MyPacketType::JoinLobby))
 	{
-		const auto* joinLobbyPacket = packet->as<MyPackets::JoinLobbyPacket>();
+		const auto* joinLobbyPacket = packet->As<MyPackets::JoinLobbyPacket>();
 		LOG("Player " << clientId.Index << " aka " << joinLobbyPacket->Name.AsString() << " joined the lobby");
 		JoinLobby(clientId, joinLobbyPacket->Name, joinLobbyPacket->IconIndex);
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::ChangeDeck))
 	{
-		const auto* changeDeckPacket = packet->as<MyPackets::ChangeDeckPacket>();
+		const auto* changeDeckPacket = packet->As<MyPackets::ChangeDeckPacket>();
 
 		ChangeDeck(clientId, changeDeckPacket->ChosenDeckType);
 	}
@@ -77,7 +77,7 @@ void Server::OnReceivePacket(PacketData packetData)
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::CardInformation))
 	{
-		const auto* selectCardPacket = packet->as<MyPackets::CardInformationPacket>();
+		const auto* selectCardPacket = packet->As<MyPackets::CardInformationPacket>();
 
 		SelectCard(clientId, selectCardPacket->CardIndexInDeck);
 	}

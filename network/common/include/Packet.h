@@ -38,7 +38,7 @@ class Packet
 	virtual void Read(sf::Packet& packet) = 0;
 
 	template<typename T>
-	T* as()
+	T* As()
 	{
 		if (typeid(*this) == typeid(T)) return static_cast<T*>(this);
 		else return nullptr;

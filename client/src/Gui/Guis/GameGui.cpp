@@ -280,7 +280,7 @@ void GameGui::OnPacketReceived(Packet& packet)
 {
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::CardInformation))
 	{
-		auto cardInformationPacket = *packet.as<MyPackets::CardInformationPacket>();
+		auto cardInformationPacket = *packet.As<MyPackets::CardInformationPacket>();
 
 		_playCards[cardInformationPacket.CardIndexInDeck.Index].SetIndex(cardInformationPacket.IconIndex);
 
