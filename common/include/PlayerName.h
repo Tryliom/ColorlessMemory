@@ -20,6 +20,11 @@ public:
 	}
 
 	std::array<char, 10> Name{};
+
+	bool operator ==(const PlayerName& other) const
+	{
+		return Name == other.Name;
+	}
 };
 
 sf::Packet& operator <<(sf::Packet& packet, const PlayerName& playerName);

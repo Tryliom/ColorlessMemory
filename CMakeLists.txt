@@ -80,17 +80,15 @@ target_include_directories(NetworkCommon PUBLIC network/common/src/)
 target_link_libraries(NetworkCommon PUBLIC sfml-system sfml-network)
 target_link_libraries(NetworkCommon PUBLIC Common)
 # Client
-file(GLOB_RECURSE NETWORK_CLIENT_FILES network/client/include/*.h network/client/src/*.cpp)
-add_library(NetworkClient STATIC ${NETWORK_CLIENT_FILES})
-target_include_directories(NetworkClient PUBLIC network/client/include/)
-target_include_directories(NetworkClient PUBLIC network/client/src/)
-target_link_libraries(NetworkClient PUBLIC NetworkCommon)
+add_library(NetworkClient INTERFACE)
+set_target_properties(NetworkClient PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(NetworkClient INTERFACE network/client/include/)
+target_link_libraries(NetworkClient INTERFACE NetworkCommon)
 # Server
-file(GLOB_RECURSE NETWORK_SERVER_FILES network/server/include/*.h network/server/src/*.cpp)
-add_library(NetworkServer STATIC ${NETWORK_SERVER_FILES})
-target_include_directories(NetworkServer PUBLIC network/server/include/)
-target_include_directories(NetworkServer PUBLIC network/server/src/)
-target_link_libraries(NetworkServer PUBLIC NetworkCommon)
+add_library(NetworkServer INTERFACE)
+set_target_properties(NetworkServer PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(NetworkServer INTERFACE network/server/include/)
+target_link_libraries(NetworkServer INTERFACE NetworkCommon)
 
 # Linking
 target_link_libraries(Common PUBLIC NetworkCommon)
@@ -110,6 +108,6 @@ foreach(test_file ${TEST_FILES} )
 
     add_executable(${test_name} ${test_file})
 
-    target_link_libraries(${test_name} PRIVATE network GTest::gtest GTest::gtest_main)
+    target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
     target_link_libraries(${test_name} PUBLIC ClientPart ServerPart)
 endforeach()
