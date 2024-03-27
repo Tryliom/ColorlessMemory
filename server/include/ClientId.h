@@ -1,14 +1,15 @@
 #pragma once
 
-#include <string>
-
-struct ClientId
+class ClientId
 {
-	int Index = -1;
+public:
+	static constexpr int EMPTY_INDEX = -1;
+
+	int Index = EMPTY_INDEX;
 
 	[[nodiscard]] bool IsEmpty() const
 	{
-		return Index == -1;
+		return Index == EMPTY_INDEX;
 	}
 
 	bool operator==(const ClientId& other) const
@@ -17,4 +18,4 @@ struct ClientId
 	}
 };
 
-static constexpr ClientId EMPTY_CLIENT_ID { -1 };
+static constexpr ClientId EMPTY_CLIENT_ID { ClientId::EMPTY_INDEX };

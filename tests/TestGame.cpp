@@ -12,21 +12,21 @@
 class TestClientNetwork final : public ClientNetworkInterface
 {
 public:
-	Packet* LastPacketReceived = nullptr;
-	std::queue<Packet*> PacketsToSend;
+	Packet* LastPacketSent = nullptr;
+	std::queue<Packet*> PacketsToProcess;
 
 	Packet* PopPacket() override
 	{
-		if (PacketsToSend.empty()) return nullptr;
+		if (PacketsToProcess.empty()) return nullptr;
 
-		auto packet = PacketsToSend.front();
-		PacketsToSend.pop();
+		auto packet = PacketsToProcess.front();
+		PacketsToProcess.pop();
 		return packet;
 	}
 
 	void SendPacket(Packet* packet) override
 	{
-		LastPacketReceived = packet;
+		LastPacketSent = packet;
 	}
 };
 
@@ -36,6 +36,7 @@ inline static float WIDTH = 1920.f;
 class TestServerNetwork final : public ServerNetworkInterface
 {
 public:
+	std::vector<PacketData> PacketsSent; //TODO: Replace last packet sent with this
 	PacketData LastPacketSent {};
 	std::queue<PacketData> PacketsToProcess;
 	std::queue<ClientId> DisconnectedClients;
@@ -82,6 +83,10 @@ TEST(TestGame, CompleteGame)
 			Game(gameManagers[1], networkClientManagers[1], WIDTH, HEIGHT)
 	};
 	std::array<ClientId, 2> clientIds = {0, 1};
+	const PlayerName p1Name = PlayerName("Player1");
+	const PlayerName p2Name = PlayerName("Player2");
+	const IconType p1Icon = IconType::Icon5;
+	const IconType p2Icon = IconType::Icon3;
 
 	const auto& p1Game = gameManagers[0].GetGame();
 	const auto& p1Lobby = gameManagers[0].GetLobby();
@@ -90,19 +95,71 @@ TEST(TestGame, CompleteGame)
 	const auto& p2Lobby = gameManagers[1].GetLobby();
 	const auto& p2Player = gameManagers[1].GetPlayer();
 
-	gameManagers[0].SetUsername("Player1");
-	gameManagers[0].SetPlayerIcon(IconType::Icon5);
-	gameManagers[1].SetUsername("Player2");
-	gameManagers[1].SetPlayerIcon(IconType::Icon3);
+	const auto updateTime = sf::milliseconds(10000);
+
+	gameManagers[0].SetUsername(p1Name.AsString());
+	gameManagers[0].SetPlayerIcon(p1Icon);
+	gameManagers[1].SetUsername(p2Name.AsString());
+	gameManagers[1].SetPlayerIcon(p2Icon);
 
 	// 1. Each player join the lobby
-	games[0].SetState(GameState::LOBBY);
+	// 1.1 Player 1 joins the lobby
+	{
+		games[0].SetState(GameState::LOBBY);
 
-	ASSERT_EQ(p1Lobby.IsHost, true);
-	ASSERT_EQ(p1Lobby.WaitingForOpponent, true);
-	ASSERT_EQ(networkClientManagers[0].LastPacketReceived->Type, static_cast<char>(MyPackets::MyPacketType::JoinLobby));
+		ASSERT_EQ(p1Lobby.IsHost, true);
+		ASSERT_EQ(p1Lobby.WaitingForOpponent, true);
+		ASSERT_EQ(networkClientManagers[0].LastPacketSent->Type, static_cast<char>(MyPackets::MyPacketType::JoinLobby));
 
-	serverNetwork.PacketsToProcess.push({ networkClientManagers[0].LastPacketReceived, clientIds[0] });
+		serverNetwork.PacketsToProcess.push({ networkClientManagers[0].LastPacketSent, clientIds[0] });
 
+		server.Update();
 
+		ASSERT_EQ(serverNetwork.LastPacketSent.Packet->Type, static_cast<char>(MyPackets::MyPacketType::LobbyInformation));
+
+		networkClientManagers[0].PacketsToProcess.push(serverNetwork.LastPacketSent.Packet);
+
+		games[0].Update(updateTime, { 0, 0 });
+
+		const auto lobbyInfoPacket = serverNetwork.LastPacketSent.Packet->As<MyPackets::LobbyInformationPacket>();
+
+		ASSERT_EQ(lobbyInfoPacket->IsHost, p1Lobby.IsHost);
+		ASSERT_EQ(lobbyInfoPacket->WaitingForOpponent, p1Lobby.WaitingForOpponent);
+		ASSERT_EQ(lobbyInfoPacket->Player1Name.AsString(), p1Lobby.Player1.Name.AsString());
+		ASSERT_EQ(lobbyInfoPacket->Player1Icon, p1Lobby.Player1.IconIndex);
+		ASSERT_EQ(lobbyInfoPacket->Player2Name.AsString(), p1Lobby.Player2.Name.AsString());
+		ASSERT_EQ(lobbyInfoPacket->Player2Icon, p1Lobby.Player2.IconIndex);
+		ASSERT_EQ(lobbyInfoPacket->ChosenDeckType, p1Lobby.DeckType);
+	}
+
+	// 1.2 Player 2 joins the lobby
+	{
+		games[1].SetState(GameState::LOBBY);
+
+		ASSERT_EQ(p2Lobby.IsHost, false);
+		ASSERT_EQ(p2Lobby.WaitingForOpponent, false);
+		ASSERT_EQ(networkClientManagers[1].LastPacketSent->Type, static_cast<char>(MyPackets::MyPacketType::JoinLobby));
+
+		serverNetwork.PacketsToProcess.push({ networkClientManagers[1].LastPacketSent, clientIds[1] });
+
+		server.Update();
+
+		//TODO: Replace last packet sent with PacketsSent
+
+		ASSERT_EQ(serverNetwork.LastPacketSent.Packet->Type, static_cast<char>(MyPackets::MyPacketType::LobbyInformation));
+
+		networkClientManagers[1].PacketsToProcess.push(serverNetwork.LastPacketSent.Packet);
+
+		games[1].Update(updateTime, { 0, 0 });
+
+		const auto lobbyInfoPacket = networkClientManagers[1].LastPacketSent->As<MyPackets::LobbyInformationPacket>();
+
+		ASSERT_EQ(lobbyInfoPacket->IsHost, p2Lobby.IsHost);
+		ASSERT_EQ(lobbyInfoPacket->WaitingForOpponent, p2Lobby.WaitingForOpponent);
+		ASSERT_EQ(lobbyInfoPacket->Player1Name.AsString(), p2Lobby.Player1.Name.AsString());
+		ASSERT_EQ(lobbyInfoPacket->Player1Icon, p2Lobby.Player1.IconIndex);
+		ASSERT_EQ(lobbyInfoPacket->Player2Name.AsString(), p2Lobby.Player2.Name.AsString());
+		ASSERT_EQ(lobbyInfoPacket->Player2Icon, p2Lobby.Player2.IconIndex);
+		ASSERT_EQ(lobbyInfoPacket->ChosenDeckType, p2Lobby.DeckType);
+	}
 }

@@ -67,6 +67,9 @@ int main()
 	while (window.isOpen())
 	{
 		sf::Event event{};
+		sf::Time elapsed = clock.restart();
+
+		server.Update();
 
 		while (window.pollEvent(event))
 		{
@@ -78,7 +81,7 @@ int main()
 
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab)
 			{
-				gameIndex = (gameIndex + 1) % games.size();
+				gameIndex = (gameIndex + 1) % static_cast<int>(games.size());
 				gameNumber = Text(
 						sf::Vector2f(10, 10),
 						{ TextLine({ CustomText{ .Text = "Game " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
@@ -87,10 +90,6 @@ int main()
 
 			games[gameIndex].CheckInputs(event);
 		}
-
-		server.Update();
-
-		sf::Time elapsed = clock.restart();
 
 		for (auto& game : games)
 		{

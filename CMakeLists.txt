@@ -110,4 +110,5 @@ foreach(test_file ${TEST_FILES} )
 
     target_link_libraries(${test_name} PRIVATE GTest::gtest GTest::gtest_main)
     target_link_libraries(${test_name} PUBLIC ClientPart ServerPart)
+    add_dependencies(${test_name} data_target)
 endforeach()
