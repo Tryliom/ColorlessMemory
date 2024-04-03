@@ -38,6 +38,53 @@ namespace ServerData
 
 	Game::Game(const Lobby& lobbyData)
 	{
+		FromLobby(lobbyData);
+	}
+
+	bool Game::HasSelectedTwoCards() const
+	{
+		return SelectedCards[0] != UNKNOWN_CARD_INDEX && SelectedCards[1] != UNKNOWN_CARD_INDEX;
+	}
+
+	void Game::SelectCard(CardIndex index)
+	{
+		for (auto& selectedCard : SelectedCards)
+		{
+			if (selectedCard == index) return;
+			if (selectedCard != UNKNOWN_CARD_INDEX) continue;
+
+			selectedCard = index;
+			return;
+		}
+	}
+
+	void Game::UnselectCards()
+	{
+		SelectedCards[0] = UNKNOWN_CARD_INDEX;
+		SelectedCards[1] = UNKNOWN_CARD_INDEX;
+	}
+
+	bool Game::IsGameOver() const
+	{
+		return Scores[0] + Scores[1] == Cards.size() / 2;
+	}
+
+	bool Game::IsPlayerInGame(ClientId clientId) const
+	{
+		return Players[0] == clientId || Players[1] == clientId;
+	}
+
+	void Game::Reset()
+	{
+		Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
+		Cards.clear();
+		CurrentTurn = 0;
+		SelectedCards = { UNKNOWN_CARD_INDEX, UNKNOWN_CARD_INDEX };
+		Scores = { 0, 0 };
+	}
+
+	void Game::FromLobby(const Lobby& lobbyData)
+	{
 		Players = lobbyData.Players;
 
 		// Create deck
@@ -72,38 +119,5 @@ namespace ServerData
 
 		CurrentTurn = static_cast<char>(Random::Range(0, 1));
 		SelectedCards = { UNKNOWN_CARD_INDEX, UNKNOWN_CARD_INDEX };
-	}
-
-	bool Game::HasSelectedTwoCards() const
-	{
-		return SelectedCards[0] != UNKNOWN_CARD_INDEX && SelectedCards[1] != UNKNOWN_CARD_INDEX;
-	}
-
-	void Game::SelectCard(CardIndex index)
-	{
-		for (auto& selectedCard : SelectedCards)
-		{
-			if (selectedCard == index) return;
-			if (selectedCard != UNKNOWN_CARD_INDEX) continue;
-
-			selectedCard = index;
-			return;
-		}
-	}
-
-	void Game::UnselectCards()
-	{
-		SelectedCards[0] = UNKNOWN_CARD_INDEX;
-		SelectedCards[1] = UNKNOWN_CARD_INDEX;
-	}
-
-	bool Game::IsGameOver() const
-	{
-		return Scores[0] + Scores[1] == Cards.size() / 2;
-	}
-
-	bool Game::IsPlayerInGame(ClientId clientId) const
-	{
-		return Players[0] == clientId || Players[1] == clientId;
 	}
 }

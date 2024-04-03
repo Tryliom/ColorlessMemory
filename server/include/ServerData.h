@@ -43,5 +43,8 @@ namespace ServerData
 		[[nodiscard]] bool HasSelectedTwoCards() const;
 		[[nodiscard]] bool IsGameOver() const;
 		[[nodiscard]] bool IsPlayerInGame(ClientId clientId) const;
+
+		void Reset();
+		void FromLobby(const Lobby& lobbyData);
 	};
 }

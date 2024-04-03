@@ -32,5 +32,6 @@ private:
 	void RemoveFromGame(ClientId clientId);
 	void ChangeDeck(ClientId clientId, DeckType deckType);
 	void StartGame(ClientId clientId);
+	void StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby);
 	void SelectCard(ClientId clientId, CardIndex cardIndex);
 };

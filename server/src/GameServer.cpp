@@ -199,7 +199,7 @@ void Server::RemoveFromGame(ClientId clientId)
 		const auto& opponent = game.Players[FIRST_PLAYER_INDEX] == clientId ? game.Players[SECOND_PLAYER_INDEX] : game.Players[FIRST_PLAYER_INDEX];
 		_serverNetworkInterface.SendPacket(new MyPackets::LeaveGamePacket(), opponent);
 
-		_games.erase(_games.begin() + i);
+		game.Reset();
 
 		return;
 	}
@@ -223,23 +223,41 @@ void Server::StartGame(ClientId clientId)
 	// Find the lobby with the player
 	for (auto& lobby: _lobbies)
 	{
-		if (lobby.Players[0] == clientId) // Only host can start the game
+		if (lobby.IsEmpty()) continue;
+		if (!lobby.IsInLobby(clientId)) continue;
+		if (lobby.Players[0] != clientId) return; // Only host can start the game
+
+		// Find or create a game
+		for (auto& game: _games)
 		{
-			// Create a new game
-			_games.emplace_back(lobby);
-			const auto& game = _games.back();
-
-			// Send a message to the players that the game is starting
-			_serverNetworkInterface.SendPacket(
-					new MyPackets::StartGamePacket(lobby.ChosenDeckType, game.CurrentTurn == 0), lobby.Players[0]);
-			_serverNetworkInterface.SendPacket(
-					new MyPackets::StartGamePacket(lobby.ChosenDeckType, game.CurrentTurn == 1), lobby.Players[1]);
-
-			// Remove the lobby
-			lobby.Reset();
-			break;
+			if (game.Players[0] == EMPTY_CLIENT_ID || game.Players[1] == EMPTY_CLIENT_ID)
+			{
+				StartNewGame(game, lobby);
+				return;
+			}
 		}
+
+		_games.emplace_back(lobby);
+		auto& game = _games.back();
+
+		StartNewGame(game, lobby);
+		return;
 	}
+}
+
+void Server::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
+{
+	game.Reset();
+	game.FromLobby(lobby);
+
+	// Send a message to the players that the game is starting
+	_serverNetworkInterface.SendPacket(
+		new MyPackets::StartGamePacket(lobby.ChosenDeckType, game.CurrentTurn == 0), lobby.Players[0]);
+	_serverNetworkInterface.SendPacket(
+		new MyPackets::StartGamePacket(lobby.ChosenDeckType, game.CurrentTurn == 1), lobby.Players[1]);
+
+	// Remove the lobby
+	lobby.Reset();
 }
 
 void Server::SelectCard(ClientId clientId, CardIndex cardIndex)
