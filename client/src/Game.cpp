@@ -13,7 +13,11 @@
 Game::Game(GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, int width, int height) :
 	_gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
 {
-	SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
+	if (AssetManager::IsInitialized())
+	{
+		SetBackground(AssetManager::GetTexture(TextureType::BACKGROUND_MENU));
+	}
+
 	SetState(GameState::MAIN_MENU);
 }
 

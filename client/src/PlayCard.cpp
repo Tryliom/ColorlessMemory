@@ -7,9 +7,12 @@
 PlayCard::PlayCard(DeckType type, CardIconIndex index)
 {
 	_index = index;
+	_revealTime = 0;
+
+	if (!AssetManager::IsInitialized()) return;
+
 	_hiddenCardTexture = AssetManager::GetCardTexture(type, false);
 	_cardTexture = AssetManager::GetCardTexture(type, true);
-	_revealTime = 0;
 
 	if (index != UNKNOWN_ICON_INDEX) _iconTexture = AssetManager::GetCardIcon(index);
 }

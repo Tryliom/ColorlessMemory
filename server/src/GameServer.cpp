@@ -306,8 +306,7 @@ void Server::SelectCard(ClientId clientId, CardIndex cardIndex)
 
 		if (game.IsGameOver())
 		{
-			// Remove game
-			_games.erase(_games.begin() + i);
+			game.Reset();
 			return;
 		}
 

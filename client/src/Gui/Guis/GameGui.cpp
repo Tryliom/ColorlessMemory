@@ -40,11 +40,10 @@ GameGui::GameGui(Game& game, GameManager& gameManager, float width, float height
 	// Create play cards
 
 	// Max size for cards
-	//TODO: Change this to be dynamic
 	const auto& maxWidth = _width - 600.f;
 	const auto& maxHeight = _height - 200.f;
 
-	auto cardSize = sf::Vector2f(AssetManager::GetCardIcon(DEFAULT_ICON_INDEX).getSize());
+	auto cardSize = AssetManager::IsInitialized() ? sf::Vector2f(AssetManager::GetCardIcon(DEFAULT_ICON_INDEX).getSize()) : sf::Vector2f(20, 20);
 	auto xOffset = 20.f;
 	auto yOffset = 20.f;
 	auto gameAreaWidth = cardSize.x * _xCards + xOffset * (_xCards - 1);
@@ -260,6 +259,7 @@ void GameGui::UpdateEndTimer(sf::Time elapsed)
 			const auto& player1Win = gameData.Player1Score > gameData.Player2Score;
 			const auto& isPlayer1 = gameData.IsFirstPlayer;
 
+			_gameManager.EndTurn();
 			_gameOver = true;
 
 			_texts[1] = Text(

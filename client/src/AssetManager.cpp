@@ -9,8 +9,12 @@ namespace AssetManager
 	static std::array<sf::Texture, 10> cardTextures;
 	static std::array<sf::Texture, CARD_ICON_COUNT> cardIcons;
 
+	static bool initialized = false;
+
 	void Initialize()
 	{
+		initialized = true;
+
 		textures[static_cast<int>(TextureType::BACKGROUND_MENU)].loadFromFile("data/textures/background.png");
         textures[static_cast<int>(TextureType::SIMPLE_ICON_BACKGROUND)].loadFromFile("data/textures/ui/0.png");
         textures[static_cast<int>(TextureType::PLAYER1_ICON_BACKGROUND)].loadFromFile("data/textures/ui/1.png");
@@ -48,5 +52,10 @@ namespace AssetManager
 	sf::Texture& GetCardIcon(const CardIconIndex index)
 	{
 		return cardIcons[static_cast<char>(index.Index)];
+	}
+
+	bool IsInitialized()
+	{
+		return initialized;
 	}
 }

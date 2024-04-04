@@ -23,4 +23,6 @@ namespace AssetManager
 	sf::Texture& GetTexture(TextureType type);
 	sf::Texture& GetCardTexture(DeckType type, bool isRevealed = false);
 	sf::Texture& GetCardIcon(CardIconIndex index);
+
+	bool IsInitialized();
 }

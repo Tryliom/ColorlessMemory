@@ -9,6 +9,9 @@ sf::Text CustomText::ToSfText() const
 	text.setFillColor(Color);
 	text.setStyle(Style);
 	text.setCharacterSize(Size);
+
+	if (!AssetManager::IsInitialized()) return text;
+
 	text.setFont(AssetManager::GetMainFont());
 
 	return text;

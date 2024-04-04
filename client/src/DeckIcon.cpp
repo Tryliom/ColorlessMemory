@@ -2,6 +2,8 @@
 
 void DeckIcon::SetTexture(DeckType deckType)
 {
+	if (!AssetManager::IsInitialized()) return;
+
 	const auto& card = &AssetManager::GetCardTexture(deckType, false);
 	const auto& cardSize = card->getSize();
 	const auto& cardSizeF = sf::Vector2f(cardSize.x, cardSize.y);

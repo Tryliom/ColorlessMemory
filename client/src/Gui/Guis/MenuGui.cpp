@@ -39,7 +39,7 @@ MenuGui::MenuGui(Game& game, GameManager& gameManager, float width, float height
 	auto widthSpace = width * 0.75f;
 	auto xStart = width / 2.f - widthSpace / 2.f + 42.f;
 	auto iconIndex = gameManager.GetPlayer().IconIndex;
-	auto cardSize = AssetManager::GetCardIcon(DEFAULT_ICON_INDEX).getSize();
+	auto cardSize = AssetManager::IsInitialized() ? sf::Vector2f(AssetManager::GetCardIcon(DEFAULT_ICON_INDEX).getSize()) : sf::Vector2f(20, 20);
 	auto iconSize = sf::Vector2f(cardSize.x, cardSize.y);
 
 	for (std::size_t i = 0; i < _iconIndexes.size(); ++i)
@@ -68,6 +68,8 @@ MenuGui::MenuGui(Game& game, GameManager& gameManager, float width, float height
 		}
 
 		_buttons.emplace_back(iconButton);
+
+		if (!AssetManager::IsInitialized()) return;
 
 		const auto& cardIcon = &AssetManager::GetCardIcon({ static_cast<char>(_iconIndexes[i]) });
 		const auto& iconBackground = &AssetManager::GetTexture(TextureType::SIMPLE_ICON_BACKGROUND);

@@ -94,7 +94,6 @@ void CompareLobbyInformations(MyPackets::LobbyInformationPacket* lobbyInformatio
 TEST(TestGame, CompleteGame)
 {
 	MyPackets::RegisterMyPackets();
-	AssetManager::Initialize();
 
 	TestServerNetwork serverNetwork;
 	Server server(serverNetwork);
@@ -387,6 +386,16 @@ TEST(TestGame, CompleteGame)
 
 					delete p1TurnPacket.Packet;
 					delete p2TurnPacket.Packet;
+				}
+				else
+				{
+					// Update for animations to finish and end turn for each player
+					games[0].Update(updateTime, { 0, 0 });
+					games[1].Update(updateTime, { 0, 0 });
+
+					// Reset the game
+					gameManagers[0].ChangeDeck(DeckType::Deck3x2);
+					gameManagers[1].ChangeDeck(DeckType::Deck3x2);
 				}
 			}
 		}
